@@ -10,9 +10,9 @@ import (
 )
 
 type ShellExecutor struct {
-	EnvVars []string
+	EnvVars  []string
 	ToolName string
-	LogFunc func(toolName, command string, output string, err error, duration time.Duration)
+	LogFunc  func(toolName, command string, output string, err error, duration time.Duration)
 	Detached bool
 }
 
@@ -90,6 +90,15 @@ func (e *ShellExecutor) Execute(cmd string) (string, error) {
 const installTimeout = 15 * time.Minute
 
 func (e *ShellExecutor) ExecuteWithOutput(cmd string) (string, error) {
+	return e.run(cmd, true)
+}
+
+func (e *ShellExecutor) Check(cmd string) error {
+	_, err := e.run(cmd, false)
+	return err
+}
+
+func (e *ShellExecutor) run(cmd string, logged bool) (string, error) {
 	start := time.Now()
 	sh, c := shellArgs()
 
@@ -103,7 +112,7 @@ func (e *ShellExecutor) ExecuteWithOutput(cmd string) (string, error) {
 	output, err := command.CombinedOutput()
 	duration := time.Since(start)
 
-	if e.LogFunc != nil {
+	if logged && e.LogFunc != nil {
 		e.LogFunc(e.ToolName, cmd, string(output), err, duration)
 	}
 

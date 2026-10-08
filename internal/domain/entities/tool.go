@@ -225,6 +225,19 @@ func (t *Tool) GetUninstallCmd(distro Distro) string {
 	return resolveCommand(t.Uninstall, distro)
 }
 
+func NeedsSudo(cmd string) bool {
+	return strings.Contains(cmd, "sudo") || strings.Contains(cmd, "--cask")
+}
+
+func FailedDependency(tool Tool, status map[string]bool) string {
+	for _, dep := range tool.DependsOn {
+		if ok, seen := status[dep]; seen && !ok {
+			return dep
+		}
+	}
+	return ""
+}
+
 func (t *Tool) HasInstallCommand() bool {
 	for _, cmd := range t.Install {
 		if cmd != "" {

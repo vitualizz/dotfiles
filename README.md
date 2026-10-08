@@ -10,17 +10,13 @@ Interactive TUI that installs and configures a complete terminal-first developme
 
 ## Quick Start
 
-**Linux** — one command, no dependencies needed:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | sudo bash
-```
-
-**macOS** — requires [Homebrew](https://brew.sh). Do **not** use `sudo` (Homebrew refuses to run as root):
+Linux and macOS (macOS requires [Homebrew](https://brew.sh)):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | bash
 ```
+
+Do **not** prefix it with `sudo`: your config would be installed for root instead of your user. When a tool needs administrator rights (apt, pacman, Docker Desktop…), DevStack asks for your password once before installing and keeps it valid until it finishes.
 
 The installer downloads a pre-compiled binary from the latest GitHub release. No Go, no Docker, no compilation — just runs.
 
@@ -101,7 +97,7 @@ Other distros may work if tools fall back to the `all` (cargo/universal) install
 ### macOS notes
 
 - **Prerequisites:** [Homebrew](https://brew.sh) (it also installs the Xcode Command Line Tools). The installer stops early with instructions if it is missing.
-- **Docker** installs Docker Desktop (`brew install --cask docker-desktop`); `docker compose` comes bundled. Open Docker.app once after installing. If the cask needs your password, the TUI reports it instead of hanging — run `brew install --cask docker-desktop` in a terminal, or use `--ci` mode, which can prompt.
+- **Docker** installs Docker Desktop (`brew install --cask docker-desktop`); `docker compose` comes bundled. Open Docker.app once after installing.
 - **Fonts** are installed as Homebrew casks into `~/Library/Fonts`.
 
 

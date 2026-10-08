@@ -25,6 +25,11 @@ type Package struct {
 	Selected        bool
 }
 
+type SudoPort interface {
+	NeedsSudo(tools []entities.Tool, uninstall bool) bool
+	SudoReady(ok bool)
+}
+
 type InstallerPort interface {
 	Install(tool *entities.Tool) (*entities.InstallResult, error)
 	Uninstall(tool *entities.Tool) (*entities.InstallResult, error)

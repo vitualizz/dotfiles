@@ -67,11 +67,12 @@ case "$(uname -s)" in
     ;;
 esac
 
+if [[ "$EUID" -eq 0 && ( "$OS" == "darwin" || -n "${SUDO_USER:-}" ) ]]; then
+  log_error "Running with sudo"
+  fatal "Do not use sudo: config would be installed for root instead of your user. Run: curl -fsSL https://raw.githubusercontent.com/${REPO}/master/install.sh | bash"
+fi
+
 if [[ "$OS" == "darwin" ]]; then
-  if [[ "$EUID" -eq 0 ]]; then
-    log_error "Running as root on macOS"
-    fatal "Do not use sudo on macOS. Run: curl -fsSL https://raw.githubusercontent.com/${REPO}/master/install.sh | bash"
-  fi
   if ! command -v brew &>/dev/null && [[ ! -x /opt/homebrew/bin/brew ]] && [[ ! -x /usr/local/bin/brew ]]; then
     log_error "Homebrew not found"
     error "Homebrew is required on macOS. Install it first:"

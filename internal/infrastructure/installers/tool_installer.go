@@ -1,7 +1,10 @@
 package installers
 
 import (
+	"os"
+	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
@@ -14,6 +17,8 @@ type ToolInstaller struct {
 	distro    entities.Distro
 	configDir string
 	log       *logger.InstallLogger
+
+	keepSudoAlive sync.Once
 }
 
 func NewToolInstaller() *ToolInstaller {
@@ -53,6 +58,38 @@ func (i *ToolInstaller) SetConfigDir(dir string) {
 
 func (i *ToolInstaller) SetDetached(detached bool) {
 	i.exec.Detached = detached
+}
+
+func (i *ToolInstaller) NeedsSudo(tools []entities.Tool, uninstall bool) bool {
+	if os.Geteuid() == 0 {
+		return false
+	}
+	for _, t := range tools {
+		cmd := t.GetInstallCmd(i.distro)
+		if uninstall {
+			cmd = t.GetUninstallCmd(i.distro)
+		}
+		if !entities.NeedsSudo(cmd) {
+			continue
+		}
+		if installed, _ := i.IsInstalled(&t); installed == uninstall {
+			return true
+		}
+	}
+	return false
+}
+
+func (i *ToolInstaller) SudoReady(ok bool) {
+	i.SetDetached(!ok)
+	if ok {
+		i.keepSudoAlive.Do(func() {
+			go func() {
+				for range time.NewTicker(time.Minute).C {
+					_ = exec.Command("sudo", "-n", "-v").Run()
+				}
+			}()
+		})
+	}
 }
 
 func (i *ToolInstaller) Distro() entities.Distro {
@@ -134,10 +171,7 @@ func (i *ToolInstaller) IsInstalled(tool *entities.Tool) (bool, error) {
 		return false, nil
 	}
 
-	i.exec.ToolName = tool.Name
-
-	_, err := i.exec.ExecuteWithOutput(tool.Check)
-	return err == nil, nil
+	return i.exec.Check(tool.Check) == nil, nil
 }
 
 func formatError(output string, err error) string {
