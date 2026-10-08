@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
-	"github.com/vitualizz/vitualizz-devstack/internal/ui/models"
+	"github.com/vitualizz/dotfiles/internal/domain/interfaces"
+	"github.com/vitualizz/dotfiles/internal/ui/models"
 )
 
 type Renderer struct {
@@ -57,7 +57,7 @@ func (r *Renderer) LanguageSelectView() string {
 		{"en", "English"},
 	}
 
-	output := Header("Vitualizz DevStack - Idioma") + "\n\n"
+	output := Header("Vitualizz Dotfiles - Idioma") + "\n\n"
 	for i, lang := range languages {
 		if i == r.Model.SettingsChoice {
 			output += Selected("► " + lang.name) + "\n"
@@ -71,7 +71,7 @@ func (r *Renderer) LanguageSelectView() string {
 
 func (r *Renderer) ThemeSelectView() string {
 	themes := r.Repo.GetThemes()
-	output := Header("Vitualizz DevStack - Themes") + "\n\n"
+	output := Header("Vitualizz Dotfiles - Themes") + "\n\n"
 
 	if len(themes) == 0 {
 		output += Warning(r.I18n.T("no_tools_found"))
@@ -125,7 +125,7 @@ func (r *Renderer) ThanksView() string {
 
 func (r *Renderer) thanksInstallView(total, success, failed int) string {
 	output := asciiBannerSmall() + "\n\n"
-	output += Selected("✓ DevStack installed successfully") + "\n\n"
+	output += Selected("✓ Dotfiles installed successfully") + "\n\n"
 
 	bar := r.statsBar(total, success, failed)
 	output += ToolDesc(bar) + "\n\n"
@@ -278,7 +278,7 @@ func (r *Renderer) SettingsView() string {
 		"⬅️ " + r.I18n.T("back"),
 	}
 
-	output := Header("Vitualizz DevStack - Configuración") + "\n\n"
+	output := Header("Vitualizz Dotfiles - Configuración") + "\n\n"
 	for i, item := range items {
 		if i == r.Model.SettingsChoice {
 			output += Selected("► " + item) + "\n"
@@ -291,7 +291,7 @@ func (r *Renderer) SettingsView() string {
 }
 
 func (r *Renderer) AboutView() string {
-	output := Header("Vitualizz DevStack") + "\n\n"
+	output := Header("Vitualizz Dotfiles") + "\n\n"
 	output += ToolDesc("github.com/vitualizz") + "\n"
 	output += ToolDesc("vitualizz.vercel.app") + "\n\n"
 	output += ToolName("v1.0.0") + "\n\n"
@@ -331,7 +331,7 @@ $$\    $$\ $$\ $$$$$$\   $$\   $$\  $$$$$$\  $$ |$$\ $$$$$$$$\ $$$$$$$$\
    \$  /   $$ |  \$$$$  |\$$$$$$  |\$$$$$$$ |$$ |$$ |$$$$$$$$\ $$$$$$$$\ 
     \_/    \__|   \____/  \______/  \_______|\__|\__|\________|\________|
 
-  D e v S t a c k
+  D o t f i l e s
 ` + reset
 }
 
@@ -349,6 +349,6 @@ $$\    $$\ $$\ $$$$$$\   $$\   $$\  $$$$$$\  $$ |$$\ $$$$$$$$\ $$$$$$$$\
    \$  /   $$ |  \$$$$  |\$$$$$$  |\$$$$$$$ |$$ |$$ |$$$$$$$$\ $$$$$$$$\ 
     \_/    \__|   \____/  \______/  \_______|\__|\__|\________|\________|
 
-  D e v S t a c k
+  D o t f i l e s
 ` + reset
 }

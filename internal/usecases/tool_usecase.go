@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/interfaces"
 )
 
 type InstallToolUseCase struct {

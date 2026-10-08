@@ -12,12 +12,12 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/config"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/installers"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/logger"
-	"github.com/vitualizz/vitualizz-devstack/internal/ui/components"
-	"github.com/vitualizz/vitualizz-devstack/i18n/locales"
+	"github.com/vitualizz/dotfiles/internal/config"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/installers"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/logger"
+	"github.com/vitualizz/dotfiles/internal/ui/components"
+	"github.com/vitualizz/dotfiles/i18n/locales"
 )
 
 //go:embed all:config
@@ -60,7 +60,7 @@ func main() {
 	var configPath string
 	var configDir string
 
-	if envPath := os.Getenv("DEVSTACK_CONFIG"); envPath != "" {
+	if envPath := os.Getenv("DOTFILES_CONFIG"); envPath != "" {
 		configPath = envPath
 		configDir = filepath.Dir(envPath)
 	} else {
@@ -106,7 +106,7 @@ func main() {
 func preflight(distro entities.Distro) error {
 	if os.Geteuid() == 0 && (distro.IsMacOS() || os.Getenv("SUDO_USER") != "") {
 		return errors.New("do not run with sudo: config would be installed for root instead of your user. " +
-			"Re-run without sudo; DevStack asks for your password when a tool needs it")
+			"Re-run without sudo; Dotfiles asks for your password when a tool needs it")
 	}
 	if !distro.IsMacOS() {
 		return nil
@@ -137,7 +137,7 @@ func extractEmbeddedConfig() (string, error) {
 
 func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inDocker bool, log *logger.InstallLogger) {
 	fmt.Println("┌─────────────────────────────────────────────┐")
-	fmt.Println("│  Vitualizz DevStack — CI Mode               │")
+	fmt.Println("│  Vitualizz Dotfiles — CI Mode               │")
 	fmt.Println("└─────────────────────────────────────────────┘")
 	fmt.Println()
 

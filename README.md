@@ -1,10 +1,10 @@
-# Vitualizz DevStack
+# Vitualizz Dotfiles
 
-[![CI](https://github.com/vitualizz/vitualizz-devstack/actions/workflows/ci.yml/badge.svg)](https://github.com/vitualizz/vitualizz-devstack/actions/workflows/ci.yml)
+[![CI](https://github.com/vitualizz/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/vitualizz/dotfiles/actions/workflows/ci.yml)
 [![Go](https://img.shields.io/badge/Go-1.24-blue?logo=go)](https://go.dev)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Interactive TUI that installs and configures a complete terminal-first development environment on Linux and macOS — Kitty, zsh, Neovim, and 40+ hand-picked tools in one go.
+Interactive installer for my terminal environment on Linux and macOS: Kitty, zsh, Starship, Neovim and the CLI tools I use every day, plus a starting config for each.
 
 > **Platform:** Linux (pacman, apt, apk, dnf) and macOS (Homebrew). Windows and BSD are **not supported**.
 
@@ -13,76 +13,41 @@ Interactive TUI that installs and configures a complete terminal-first developme
 Linux and macOS (macOS requires [Homebrew](https://brew.sh)):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vitualizz/dotfiles/master/install.sh | bash
 ```
 
-Do **not** prefix it with `sudo`: your config would be installed for root instead of your user. When a tool needs administrator rights (apt, pacman, Docker Desktop…), DevStack asks for your password once before installing and keeps it valid until it finishes.
+Do **not** prefix it with `sudo`: your config would be installed for root instead of your user. When a tool needs administrator rights (apt, pacman, Homebrew casks), the installer asks for your password once and keeps it valid until it finishes.
 
-The installer downloads a pre-compiled binary from the latest GitHub release. No Go, no Docker, no compilation — just runs.
+The script downloads a pre-compiled binary from the latest GitHub release, runs it, and deletes it.
 
-### Manual Install
+## How config works: seed and let go
 
-If you prefer to build from source:
+The installer **installs**; it does not **own** your environment. Each config is copied once to the tool's own location, and from then on it is yours. Re-running the installer never overwrites it.
 
-```bash
-git clone https://github.com/vitualizz/vitualizz-devstack.git
-cd vitualizz-devstack
-go run ./cmd/vitualizz-devstack/     # interactive TUI
-go run ./cmd/vitualizz-devstack/ --ci  # headless mode
-```
+| Config | Where it goes | If it already exists |
+|--------|---------------|----------------------|
+| Starship prompt | `~/.config/starship.toml` | kept as is |
+| Kitty + Vitualizz theme | `~/.config/kitty/kitty.conf`, `color.ini` | kept as is (per file) |
+| zsh integration | `~/.zshrc` | a commented `vitualizz dotfiles` block is appended once |
 
-Or use Docker:
+The `~/.zshrc` block wires up what the installer adds (Homebrew, completions, Starship, zoxide, direnv, fzf, atuin and the zsh plugins). Each section only acts if that is not already configured above it, so appending it to an existing `~/.zshrc` doesn't override your setup. Edit, move or delete it freely. A backup (`~/.zshrc.bak-<timestamp>`) is made before appending.
 
-```bash
-docker compose run app               # CI mode (headless)
-docker compose run app ./vitualizz-devstack --tui  # interactive
-```
+Uninstalling tools never touches these files.
 
-## What Is This
-
-A **DevStack** — not a dotfiles repo, not a collection of scripts. It's an opinionated, reproducible way to go from a bare Linux install to a fully configured developer environment.
-
-```
-Language select → Theme select → Tool select → Install
-```
-
-Each tool declares install commands per platform. The installer detects your platform at runtime and picks the right command:
-
-- **Linux:** `exact distro → all → other distros → fallback`
-- **macOS:** `macos → brew → all → fallback` — Linux commands (apt, pacman, sudo…) are never used
-
-```yaml
-# config/tools.yaml
-- name: ripgrep
-  install:
-    arch: pacman -S ripgrep
-    debian: apt-get install -y ripgrep
-    alpine: apk add ripgrep
-    brew: brew install ripgrep    # macOS (and Linuxbrew)
-    all: cargo install ripgrep   # universal fallback
-```
-
-Casks and other macOS-only commands go under `macos:` (casks don't exist on Linux). A test (`internal/config/tools_yaml_test.go`) fails if any tool resolves to a Linux-only command on macOS, or to a macOS command on Linux.
-
-## Stack
+## What's installed
 
 | Category | Tools |
 |----------|-------|
-| **Terminal** | Kitty (+ Vitualizz color theme) |
-| **Shell** | zsh, Starship, autosuggestions, syntax-highlighting, atuin |
-| **Editor** | Neovim |
-| **AI** | opencode |
-| **Version managers** | mise, rustup, uv |
-| **Containers** | Docker, docker-compose, lazydocker |
-| **Git** | lazygit, delta, gh |
-| **File tools** | eza, bat, yazi, fd, fzf, zoxide |
-| **Search / replace** | ripgrep, sd |
-| **Disk / process** | bottom, btop, duf, dust |
-| **Docs** | tealdeer (tldr), glow, httpie |
+| **Terminal** | Kitty |
+| **Shell** | zsh, Starship, zsh-autosuggestions, zsh-syntax-highlighting, atuin, zoxide, fzf, direnv |
+| **Editor** | Neovim, ripgrep, fd, C compiler (for nvim-treesitter) |
+| **Git** | git, lazygit, delta, gh, gnupg |
+| **Files** | yazi, eza, bat, sd |
 | **Data** | jq, yq |
-| **Info** | fastfetch, onefetch |
+| **System** | btop, duf, dust, hyperfine |
+| **Docs / info** | tealdeer, glow, fastfetch, onefetch |
+| **Runtimes** | mise |
 | **Fonts** | Hack, JetBrains Mono, Fira Code (Nerd Fonts) |
-| **Theme** | Vitualizz |
 
 ## Supported Platforms
 
@@ -92,182 +57,78 @@ Casks and other macOS-only commands go under `macos:` (casks don't exist on Linu
 - **Fedora** (dnf)
 - **macOS** on Apple Silicon or Intel (Homebrew)
 
-Other distros may work if tools fall back to the `all` (cargo/universal) install path, but are not officially tested.
-
 ### macOS notes
 
 - **Prerequisites:** [Homebrew](https://brew.sh) (it also installs the Xcode Command Line Tools). The installer stops early with instructions if it is missing.
-- **Docker** installs Docker Desktop (`brew install --cask docker-desktop`); `docker compose` comes bundled. Open Docker.app once after installing.
+- **git** is installed from Homebrew, replacing Apple's older bundled git.
 - **Fonts** are installed as Homebrew casks into `~/Library/Fonts`.
 
+## How tools are resolved
 
-## Your existing config is preserved
+Each tool in `cmd/dotfiles/config/tools.yaml` declares install commands per platform. The installer detects the platform and picks the first match:
 
-DevStack never replaces your dotfiles. It ships its config as separate files and adds a single marked line to yours:
+- **Linux:** `exact distro → all → other distros → fallback`
+- **macOS:** `macos → brew → all → fallback`. Linux commands (apt, pacman, sudo…) are never used.
 
-| File | Line added | DevStack config |
-|------|-----------|-----------------|
-| `~/.zshrc` | `source ~/.config/vitualizz-devstack/zshrc  # vitualizz-devstack` (appended) | `~/.config/vitualizz-devstack/zshrc` |
-| `~/.config/kitty/kitty.conf` | `include vitualizz/kitty.conf` (first line) | `~/.config/kitty/vitualizz/` |
+```yaml
+- name: ripgrep
+  install:
+    debian: sudo apt-get install -y ripgrep
+    arch: sudo pacman -S --noconfirm ripgrep
+    brew: brew install ripgrep
+  check: rg --version
+```
 
-- **Your settings win.** The zsh config only sets what is still unset (Homebrew, history, aliases, prompt, plugins, `PATH` entries); kitty's include goes first, so your options override it.
-- **Re-running is safe**: the line is added once. **Uninstalling** removes only that line and DevStack's files, leaving your file exactly as it was.
-- Symlinked dotfiles (stow, chezmoi…) stay symlinks. A one-time backup (`<file>.bak-<timestamp>`) is still made before the first change.
+Homebrew casks and other macOS-only commands go under `macos:`. `internal/config/tools_yaml_test.go` fails if a tool resolves to a Linux-only command on macOS or to a macOS command on Linux, and checks that seeded configs are never overwritten.
 
+## Architecture
 
-
-Hexagonal (Ports & Adapters) — UI and infrastructure never import each other, only through interfaces.
+Hexagonal (Ports & Adapters): UI and infrastructure only talk through interfaces.
 
 ```
-cmd/vitualizz-devstack/
-    config/          ← embedded config files (tools.yaml, kitty/, zsh/)
+cmd/dotfiles/
+  config/           embedded into the binary (tools.yaml, kitty/, zsh/, starship/)
 internal/
   domain/
-    entities/     ← Tool, Theme, Distro, Category
-    interfaces/   ← InstallerPort, ToolRepository (ports)
-  usecases/       ← InstallTool, UninstallTool, BatchInstall, CheckStatus
-  config/         ← YAML-based ToolRepository (adapter)
+    entities/       Tool, Distro, Category
+    interfaces/     InstallerPort, SudoPort, ToolRepository
+  usecases/         install, uninstall, dependency order
+  config/           YAML-backed ToolRepository
   infrastructure/
-    executor/     ← ShellExecutor (runs commands, detects distro)
-    installers/   ← ShellInstaller (wires executor to ports)
-  ui/
-    components/   ← Bubbletea app
-    models/       ← AppModel (state machine)
-i18n/             ← en/es translations
+    executor/       runs shell commands
+    installers/     resolves and runs each tool's commands
+    logger/         ~/.local/state/vitualizz-dotfiles/install.log
+  ui/               Bubble Tea TUI
+i18n/               en/es translations
 ```
 
-> **Note**: `config/` (tools.yaml, kitty/, zsh/) lives inside `cmd/vitualizz-devstack/config/` and is embedded into the binary at build time via `go:embed`.
-```
+## Development
 
-## Development Environment
-
-### Prerequisites
-
-- Go 1.24+ (macOS: `brew install go`)
-- Docker & Docker Compose (optional, for isolated testing)
-- Vagrant + VirtualBox/libvirt (optional, for multi-distro testing)
-
-### Run Locally
+Requires Go 1.24+ (macOS: `brew install go`).
 
 ```bash
-go run ./cmd/vitualizz-devstack/
-```
-
-### Run Tests
-
-```bash
-# All packages with race detector and coverage
+go run ./cmd/dotfiles/          # interactive TUI
+go run ./cmd/dotfiles/ --ci     # headless: no TUI, exit code 1 if a tool fails
 go test -race -cover ./...
-
-# Verbose output
-go test -v ./...
 ```
 
-### Docker (Isolated Environment)
+`DOTFILES_CONFIG=/path/to/tools.yaml` runs with an external config instead of the embedded one.
+
+### Isolated environments
 
 ```bash
-# Run the DevStack installer in CI mode (headless)
-docker compose run app
-
-# Run in interactive TUI mode
-docker compose run app ./vitualizz-devstack --tui
-
-# Run all tests in a clean container
-docker compose run test
-
-# Open a debug shell inside the build environment
-docker compose run shell
+docker compose run app          # Linux container, --ci mode (skips kitty)
+docker compose run test         # tests in a clean container
+vagrant up ubuntu               # or: vagrant up arch
 ```
-
-The `app` service builds and runs the installer in CI mode by default — no TUI, clean output, auto-detects Docker and skips incompatible tools (kitty, docker, etc.).
-
-### Vagrant (Multi-Distro Testing)
-
-Boot real Linux VMs to test the installer across distros:
-
-```bash
-vagrant up ubuntu    # Ubuntu 22.04 LTS (~2 min)
-vagrant up arch      # Arch Linux (~3 min)
-
-vagrant ssh ubuntu   # SSH into the VM
-# Inside the VM:
-cd /vagrant
-go run ./cmd/vitualizz-devstack/
-
-vagrant destroy -f   # Clean up when done
-```
-
-Both VMs come with 2 vCPUs and 2GB RAM. The project root is synced to `/vagrant` so you can build and run the installer directly.
-
-| Distro | Box | Provider |
-|--------|-----|----------|
-| Ubuntu 22.04 | `ubuntu/jammy64` | VirtualBox / libvirt |
-| Arch Linux | `archlinux/archlinux` | VirtualBox / libvirt |
-
-### Build
-
-```bash
-go build -o vitualizz-devstack ./cmd/vitualizz-devstack/
-
-# Run in CI mode (headless, no TUI)
-./vitualizz-devstack --ci
-
-# Run in TUI mode (interactive)
-./vitualizz-devstack
-```
-
-### CI Mode
-
-The `--ci` flag runs the installer without a TUI — designed for:
-- **Docker testing** — no TTY required, clean output
-- **CI/CD pipelines** — exit code 1 if any tool fails
-- **Quick verification** — see what installs and what doesn't
 
 ## Releases
 
-Binary releases are built automatically via GitHub Actions + GoReleaser when a tag is pushed:
+Pushing a tag builds binaries for linux/darwin × amd64/arm64 with GoReleaser:
 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
-
-This triggers the `release.yml` workflow which:
-1. Builds static binaries for `linux/amd64` and `linux/arm64`
-2. Creates a GitHub Release with changelog
-3. Uploads checksums
-
-No Go installation needed — `install.sh` downloads the pre-built binary directly.
-
-## Adding a Tool
-
-1. Add an entry to `config/tools.yaml`:
-
-```yaml
-- name: my-tool
-  category: tools          # terminal | shell | editor | tools | container | fonts
-  description: "Does X"
-  install:
-    arch: pacman -S my-tool
-    debian: apt-get install -y my-tool
-    all: cargo install my-tool   # universal fallback
-  uninstall:
-    all: rm ~/.local/bin/my-tool
-  check: which my-tool
-  enabled: true
-  required: false
-  depends_on:
-    - rustup                # installed first if listed
-```
-
-2. Add translations to `i18n/locales/en.json` and `i18n/locales/es.json`.
-
-## CI
-
-Every push to `master` and every PR runs:
-
-- `go build ./...`
-- `go test -race -cover ./...`
-- `golangci-lint`
 
 ## License
 

@@ -48,7 +48,7 @@ tools:
     install:
       all: |
         mkdir -p ~/.config/kitty
-        for f in $DEVSTACK_CONFIG/kitty/*; do
+        for f in $DOTFILES_CONFIG/kitty/*; do
           [ -e ~/.config/kitty/$(basename $f) ] || cp $f ~/.config/kitty/
         done
     uninstall:
@@ -84,7 +84,7 @@ tools:
       all: |
         if ! grep -qs "vitualizz dotfiles" ~/.zshrc; then
           [ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak-$(date +%Y%m%d%H%M%S) && printf '\n' >> ~/.zshrc
-          cat $DEVSTACK_CONFIG/zsh/zshrc >> ~/.zshrc
+          cat $DOTFILES_CONFIG/zsh/zshrc >> ~/.zshrc
         fi
     uninstall:
       all: echo "~/.zshrc es tuyo; no se modifica"
@@ -114,7 +114,7 @@ tools:
     install:
       all: |
         mkdir -p ~/.config
-        [ -e ~/.config/starship.toml ] || cp $DEVSTACK_CONFIG/starship/starship.toml ~/.config/starship.toml
+        [ -e ~/.config/starship.toml ] || cp $DOTFILES_CONFIG/starship/starship.toml ~/.config/starship.toml
     uninstall:
       all: echo "~/.config/starship.toml es tuyo; no se modifica"
     check: test -e ~/.config/starship.toml
@@ -174,7 +174,7 @@ tools:
       macos: |
         xcode-select -p >/dev/null 2>&1 || {
           xcode-select --install
-          echo "Accept the Xcode Command Line Tools dialog, then run DevStack again." >&2
+          echo "Accept the Xcode Command Line Tools dialog, then run Dotfiles again." >&2
           exit 1
         }
     check: gcc --version

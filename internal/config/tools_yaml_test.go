@@ -8,12 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/config"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/installers"
+	"github.com/vitualizz/dotfiles/internal/config"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/installers"
 )
 
-const shippedToolsYAML = "../../cmd/vitualizz-devstack/config/tools.yaml"
+const shippedToolsYAML = "../../cmd/dotfiles/config/tools.yaml"
 
 var linuxOnly = regexp.MustCompile(`\b(sudo|apt-get|apt|dpkg|pacman|yay|dnf|zypper|apk|fc-cache)\b|_linux|Linux_|linux-`)
 

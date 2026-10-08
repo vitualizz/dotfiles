@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
 )
 
 func TestGetInstallCmd(t *testing.T) {

@@ -1,10 +1,10 @@
 Vagrant.configure("2") do |config|
   config.vm.define "ubuntu" do |u|
     u.vm.box = "ubuntu/jammy64"
-    u.vm.hostname = "devstack-ubuntu"
+    u.vm.hostname = "dotfiles-ubuntu"
 
     u.vm.provider "virtualbox" do |vbox|
-      vbox.name = "vitualizz-devstack-ubuntu"
+      vbox.name = "dotfiles-ubuntu"
       vbox.cpus = 2
       vbox.memory = 2048
       vbox.default_nic_type = "virtio"
@@ -15,10 +15,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "arch" do |a|
     a.vm.box = "archlinux/archlinux"
-    a.vm.hostname = "devstack-arch"
+    a.vm.hostname = "dotfiles-arch"
 
     a.vm.provider "virtualbox" do |vbox|
-      vbox.name = "vitualizz-devstack-arch"
+      vbox.name = "dotfiles-arch"
       vbox.cpus = 2
       vbox.memory = 2048
       vbox.default_nic_type = "virtio"

@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/executor"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/logger"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/executor"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/logger"
 )
 
 type ToolInstaller struct {
@@ -52,7 +52,7 @@ func (i *ToolInstaller) SetLogger(l *logger.InstallLogger) {
 func (i *ToolInstaller) SetConfigDir(dir string) {
 	i.configDir = dir
 	if dir != "" {
-		i.exec.EnvVars = []string{"DEVSTACK_CONFIG=" + dir}
+		i.exec.EnvVars = []string{"DOTFILES_CONFIG=" + dir}
 	}
 }
 

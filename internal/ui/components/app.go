@@ -5,12 +5,12 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
-	"github.com/vitualizz/vitualizz-devstack/internal/ui/models"
-	"github.com/vitualizz/vitualizz-devstack/internal/ui/views"
-	"github.com/vitualizz/vitualizz-devstack/internal/usecases"
-	"github.com/vitualizz/vitualizz-devstack/i18n/locales"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/interfaces"
+	"github.com/vitualizz/dotfiles/internal/ui/models"
+	"github.com/vitualizz/dotfiles/internal/ui/views"
+	"github.com/vitualizz/dotfiles/internal/usecases"
+	"github.com/vitualizz/dotfiles/i18n/locales"
 )
 
 type App struct {

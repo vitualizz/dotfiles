@@ -21,7 +21,11 @@ func NewInstallLogger() (*InstallLogger, error) {
 		return nil, err
 	}
 
-	logDir := filepath.Join(home, ".vitualizz-devstack")
+	stateDir := os.Getenv("XDG_STATE_HOME")
+	if stateDir == "" {
+		stateDir = filepath.Join(home, ".local", "state")
+	}
+	logDir := filepath.Join(stateDir, "vitualizz-dotfiles")
 	if err := os.MkdirAll(logDir, 0o755); err != nil {
 		return nil, err
 	}

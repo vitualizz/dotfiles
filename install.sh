@@ -8,9 +8,9 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-REPO="vitualizz/vitualizz-devstack"
-BIN_NAME="vitualizz-devstack"
-LOG_DIR="${HOME}/.vitualizz-devstack"
+REPO="vitualizz/dotfiles"
+BIN_NAME="dotfiles"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/vitualizz-dotfiles"
 LOG_FILE="${LOG_DIR}/install.log"
 
 info()    { echo -e "${CYAN}▸${NC} $1"; }
@@ -53,7 +53,7 @@ $$\    $$\ $$\ $$$$$$\   $$\   $$\  $$$$$$\  $$ |$$\ $$$$$$$$\ $$$$$$$$\
    \$  /   $$ |  \$$$$  |\$$$$$$  |\$$$$$$$ |$$ |$$ |$$$$$$$$\ $$$$$$$$\ 
     \_/    \__|   \____/  \______/  \_______|\__|\__|\________|\________|
                                                                          
-  D e v S t a c k
+  D o t f i l e s
 BANNER
 echo -e "${NC}"
 
@@ -63,7 +63,7 @@ case "$(uname -s)" in
   Darwin) OS="darwin" ;;
   *)
     log_error "Unsupported OS: $(uname -s)"
-    fatal "Vitualizz DevStack supports Linux and macOS. Windows and BSD are not supported."
+    fatal "Vitualizz Dotfiles supports Linux and macOS. Windows and BSD are not supported."
     ;;
 esac
 
@@ -113,7 +113,7 @@ download_binary() {
   local version
   version=$(echo "$latest_url" | sed -nE 's#.*/download/v([0-9]+\.[0-9]+\.[0-9]+)/.*#\1#p')
   version=${version:-latest}
-  info "Downloading Vitualizz DevStack ${version} (${OS}/${ARCH})..."
+  info "Downloading Vitualizz Dotfiles ${version} (${OS}/${ARCH})..."
   log_step "CMD: curl -o $TMP_BIN $latest_url"
 
   local output
@@ -139,7 +139,7 @@ build_from_source() {
   fi
 
   local tmpdir
-  tmpdir=$(mktemp -d "/tmp/devstack-build.XXXXXX")
+  tmpdir=$(mktemp -d "/tmp/dotfiles-build.XXXXXX")
 
   info "Cloning ${REPO}..."
   log_step "CMD: git clone --depth 1 ${REPO}"
@@ -149,8 +149,8 @@ build_from_source() {
   }
 
   info "Building from source..."
-  log_step "CMD: go build -o $TMP_BIN ./cmd/vitualizz-devstack/"
-  if ! (cd "$tmpdir" && go build -o "$TMP_BIN" ./cmd/vitualizz-devstack/); then
+  log_step "CMD: go build -o $TMP_BIN ./cmd/dotfiles/"
+  if ! (cd "$tmpdir" && go build -o "$TMP_BIN" ./cmd/dotfiles/); then
     rm -rf "$tmpdir"
     fatal "Build failed"
   fi
@@ -166,7 +166,7 @@ else
 fi
 
 echo
-info "Starting Vitualizz DevStack..."
+info "Starting Vitualizz Dotfiles..."
 echo
 info "📝 Log: ${LOG_FILE}"
 echo

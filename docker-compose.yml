@@ -3,18 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: vitualizz-devstack
+    container_name: dotfiles
     stdin_open: true
     tty: true
     volumes:
       - .:/app
-      - devstack-logs:/root/.vitualizz-devstack
+      - dotfiles-logs:/root/.local/state/vitualizz-dotfiles
 
   test:
     build:
       context: .
       dockerfile: Dockerfile.test
-    container_name: vitualizz-devstack-test
+    container_name: dotfiles-test
     volumes:
       - .:/app
     working_dir: /app
@@ -24,10 +24,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vitualizz-devstack-shell
+    container_name: dotfiles-shell
     stdin_open: true
     tty: true
     entrypoint: ["/bin/bash"]
 
 volumes:
-  devstack-logs:
+  dotfiles-logs:

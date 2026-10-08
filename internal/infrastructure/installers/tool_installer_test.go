@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
 )
 
 func TestToolInstaller(t *testing.T) {
