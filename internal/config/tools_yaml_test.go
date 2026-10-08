@@ -86,6 +86,7 @@ func TestShippedTools_SeedsConfigWithoutOverwriting(t *testing.T) {
 		{"zsh-config", ".zshrc", true},
 		{"kitty-config", ".config/kitty/kitty.conf", false},
 		{"starship-config", ".config/starship.toml", false},
+		{"nvim-config", ".config/nvim/init.lua", false},
 	}
 
 	for _, tc := range cases {

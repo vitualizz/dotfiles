@@ -13,7 +13,7 @@ func TestExtractEmbeddedConfig(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	for _, f := range []string{"tools.yaml", "zsh/zshrc", "kitty/kitty.conf", "kitty/color.ini"} {
+	for _, f := range []string{"tools.yaml", "zsh/zshrc", "kitty/kitty.conf", "kitty/color.ini", "nvim/init.lua", "nvim/lua/vitualizz/health.lua"} {
 		info, err := os.Stat(filepath.Join(dir, f))
 		if err != nil {
 			t.Errorf("%s not extracted: %v", f, err)

@@ -1,0 +1,18 @@
+vim.loader.enable()
+
+require 'vitualizz.options'
+require 'vitualizz.pack'
+require 'vitualizz.keymaps'
+require 'vitualizz.diagnostics'
+require 'vitualizz.autocmds'
+require 'vitualizz.plugins.colorscheme'
+require 'vitualizz.plugins.editor'
+require 'vitualizz.plugins.git'
+require 'vitualizz.plugins.which-key'
+require 'vitualizz.plugins.telescope'
+require 'vitualizz.plugins.lsp'
+require 'vitualizz.plugins.format'
+require 'vitualizz.plugins.completion'
+require 'vitualizz.plugins.treesitter'
+require 'vitualizz.plugins.autopairs'
+require 'vitualizz.plugins.snacks'

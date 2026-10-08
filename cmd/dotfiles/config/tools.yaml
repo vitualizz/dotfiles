@@ -150,6 +150,20 @@ tools:
     required: true
     source_url: https://github.com/neovim/neovim
 
+  - name: nvim-config
+    category: editor
+    depends_on: [neovim, git, build-essential, ripgrep, fd]
+    install:
+      all: |
+        mkdir -p ~/.config
+        [ -e ~/.config/nvim ] || cp -R $DOTFILES_CONFIG/nvim ~/.config/nvim
+    uninstall:
+      all: echo "~/.config/nvim es tuyo; no se modifica"
+    check: test -e ~/.config/nvim/init.lua
+    description: "Siembra la config de Neovim (base kickstart.nvim) si no existe"
+    enabled: true
+    required: false
+
   - name: mise
     category: tools
     install:
