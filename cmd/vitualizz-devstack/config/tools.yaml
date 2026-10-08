@@ -179,90 +179,9 @@ tools:
           exit 1
         }
     check: gcc --version
-    description: "Build tools (gcc, g++, make) needed for cargo install"
+    description: "Compilador C (gcc/clang, make) que usa nvim-treesitter"
     enabled: true
     required: true
-
-  - name: rustup
-    category: tools
-    install:
-      all: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        RC_LINE='export PATH="$HOME/.cargo/bin:$PATH"'
-        for rc in ~/.bashrc ~/.zshrc; do
-          if [ -f "$rc" ]; then
-            grep -qF "$RC_LINE" "$rc" 2>/dev/null || echo "$RC_LINE" >> "$rc"
-          fi
-        done
-        [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-    uninstall:
-      all: rustup self uninstall -y
-    check: rustup --version
-    description: "Gestor de versiones de Rust y Cargo"
-    enabled: true
-    required: false
-    source_url: https://rustup.rs
-
-  - name: opencode
-    category: tools
-    install:
-      brew: brew install opencode
-      all: curl -fsSL https://opencode.ai/install | bash
-    uninstall:
-      brew: brew uninstall opencode
-      all: rm -f ~/.opencode/bin/opencode
-    check: opencode --version
-    description: "Asistente de IA para programar"
-    enabled: true
-    required: false
-    source_url: https://opencode.ai
-
-  - name: docker
-    category: container
-    install:
-      macos: brew install --cask docker-desktop
-      all: curl -fsSL https://get.docker.com | sh
-    uninstall:
-      macos: brew uninstall --cask docker-desktop
-      debian: sudo apt-get remove -y docker-ce
-      arch: sudo pacman -R --noconfirm docker
-      fedora: sudo dnf remove -y docker-ce
-    check: docker --version
-    description: "Plataforma de contenedores"
-    enabled: true
-    required: false
-    source_url: https://docker.com
-
-  - name: docker-compose
-    category: container
-    depends_on: [docker]
-    install:
-      debian: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose-plugin
-      arch: |
-        sudo pacman -S --noconfirm docker-compose
-      fedora: |
-        sudo dnf install -y docker-compose
-      macos: |
-        docker compose version || {
-          echo "docker compose ships with Docker Desktop: install docker first and open Docker.app once." >&2
-          exit 1
-        }
-      fallback: |
-        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    uninstall:
-      debian: sudo apt-get remove -y docker-compose-plugin
-      arch: sudo pacman -R --noconfirm docker-compose
-      fedora: sudo dnf remove -y docker-compose
-      macos: echo "docker compose is bundled with Docker Desktop; uninstall docker instead"
-      fallback: sudo rm -f /usr/local/bin/docker-compose
-    check: docker compose version
-    description: "Plugin Docker Compose"
-    enabled: true
-    required: false
-    source_url: https://github.com/docker/compose
 
   - name: fzf
     category: tools
@@ -286,17 +205,17 @@ tools:
   - name: bat
     category: tools
     install:
-      debian: sudo apt-get install -y bat
+      debian: |
+        sudo apt-get install -y bat
+        [ -x /usr/bin/batcat ] && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat || true
       arch: sudo pacman -S --noconfirm bat
       fedora: sudo dnf install -y bat
       brew: brew install bat
-      fallback: cargo install bat
     uninstall:
       debian: sudo apt-get remove -y bat
       arch: sudo pacman -R --noconfirm bat
       fedora: sudo dnf remove -y bat
       brew: brew uninstall bat
-      fallback: cargo uninstall bat
     check: bat --version
     description: "cat con resaltado de sintaxis"
     enabled: true
@@ -315,12 +234,10 @@ tools:
       arch: sudo pacman -S --noconfirm eza
       fedora: sudo dnf install -y eza
       brew: brew install eza
-      fallback: cargo install eza
     uninstall:
       arch: sudo pacman -R --noconfirm eza
       fedora: sudo dnf remove -y eza
       brew: brew uninstall eza
-      fallback: cargo uninstall eza
     check: eza --version
     description: "Reemplazo moderno de ls"
     enabled: true
@@ -329,13 +246,25 @@ tools:
 
   - name: yazi
     category: tools
-    depends_on: [rustup, build-essential]
     install:
+      debian: |
+        curl -fsSLo /tmp/yazi.deb "https://github.com/sxyazi/yazi/releases/latest/download/yazi-$(uname -m)-unknown-linux-gnu.deb"
+        sudo dpkg -i /tmp/yazi.deb
+        rm -f /tmp/yazi.deb
+      arch: sudo pacman -S --noconfirm yazi
       brew: brew install yazi
-      all: cargo install yazi-fm yazi-cli --locked
+      fallback: |
+        ARCH=$(uname -m)
+        curl -fsSLo /tmp/yazi.zip "https://github.com/sxyazi/yazi/releases/latest/download/yazi-$ARCH-unknown-linux-gnu.zip"
+        unzip -o -q /tmp/yazi.zip -d /tmp/yazi
+        mkdir -p ~/.local/bin
+        install -m 755 /tmp/yazi/yazi-$ARCH-unknown-linux-gnu/yazi /tmp/yazi/yazi-$ARCH-unknown-linux-gnu/ya ~/.local/bin/
+        rm -rf /tmp/yazi /tmp/yazi.zip
     uninstall:
+      debian: sudo dpkg -r yazi
+      arch: sudo pacman -R --noconfirm yazi
       brew: brew uninstall yazi
-      all: cargo uninstall yazi-fm yazi-cli
+      fallback: rm -f ~/.local/bin/yazi ~/.local/bin/ya
     check: ya --version
     description: "Gestor de archivos en terminal"
     enabled: true
@@ -415,21 +344,6 @@ tools:
     required: false
     source_url: https://github.com/ajeetdsouza/zoxide
 
-  - name: bottom
-    category: tools
-    depends_on: [rustup, build-essential]
-    install:
-      brew: brew install bottom
-      all: cargo install bottom --locked
-    uninstall:
-      brew: brew uninstall bottom
-      all: cargo uninstall bottom
-    check: btm --version
-    description: "Monitor del sistema"
-    enabled: true
-    required: false
-    source_url: https://github.com/ClementTsang/bottom
-
   - name: gh
     category: tools
     install:
@@ -453,39 +367,53 @@ tools:
     required: false
     source_url: https://github.com/cli/cli
 
-  - name: uv
+  - name: git
     category: tools
     install:
-      brew: brew install uv
-      all: curl -LsSf https://astral.sh/uv/install.sh | sh
+      debian: sudo apt-get install -y git
+      arch: sudo pacman -S --noconfirm git
+      fedora: sudo dnf install -y git
+      brew: brew install git
     uninstall:
-      brew: brew uninstall uv
-      all: rm -f ~/.local/bin/uv
-    check: uv --version
-    description: "Gestor de paquetes Python ultrarrápido"
+      brew: brew uninstall git
+    check: if [ "$(uname)" = Darwin ]; then brew list --formula git >/dev/null 2>&1; else git --version; fi
+    description: "Git actualizado (en macOS reemplaza al de Apple)"
     enabled: true
-    required: false
-    source_url: https://github.com/astral-sh/uv
+    required: true
+    source_url: https://git-scm.com
 
-  - name: httpie
+  - name: gnupg
     category: tools
     install:
-      debian: sudo apt-get install -y httpie
-      arch: sudo pacman -S --noconfirm httpie
-      fedora: sudo dnf install -y httpie
-      brew: brew install httpie
-      fallback: python3 -m pip install --user httpie
+      debian: sudo apt-get install -y gnupg
+      arch: sudo pacman -S --noconfirm gnupg
+      fedora: sudo dnf install -y gnupg2
+      brew: brew install gnupg
     uninstall:
-      debian: sudo apt-get remove -y httpie
-      arch: sudo pacman -R --noconfirm httpie
-      fedora: sudo dnf remove -y httpie
-      brew: brew uninstall httpie
-      fallback: python3 -m pip uninstall -y httpie
-    check: http --version
-    description: "Cliente HTTP amigable"
+      brew: brew uninstall gnupg
+    check: gpg --version
+    description: "GPG para firmar commits"
     enabled: true
     required: false
-    source_url: https://github.com/httpie/httpie
+    source_url: https://gnupg.org
+
+  - name: hyperfine
+    category: tools
+    install:
+      debian: sudo apt-get install -y hyperfine
+      arch: sudo pacman -S --noconfirm hyperfine
+      fedora: sudo dnf install -y hyperfine
+      brew: brew install hyperfine
+    uninstall:
+      debian: sudo apt-get remove -y hyperfine
+      arch: sudo pacman -R --noconfirm hyperfine
+      fedora: sudo dnf remove -y hyperfine
+      brew: brew uninstall hyperfine
+    check: hyperfine --version
+    description: "Benchmarks de comandos"
+    enabled: true
+    required: false
+    source_url: https://github.com/sharkdp/hyperfine
 
   - name: yq
     category: tools
@@ -547,13 +475,16 @@ tools:
 
   - name: sd
     category: tools
-    depends_on: [rustup, build-essential]
     install:
+      debian: sudo apt-get install -y sd
+      arch: sudo pacman -S --noconfirm sd
+      fedora: sudo dnf install -y sd
       brew: brew install sd
-      fallback: . "$HOME/.cargo/env" && cargo install sd --quiet
     uninstall:
+      debian: sudo apt-get remove -y sd
+      arch: sudo pacman -R --noconfirm sd
+      fedora: sudo dnf remove -y sd
       brew: brew uninstall sd
-      all: . "$HOME/.cargo/env" && cargo uninstall sd
     check: sd --version
     description: "Reemplazo moderno de sed"
     enabled: true
@@ -610,7 +541,6 @@ tools:
         rm -f /tmp/dust.deb
       arch: sudo pacman -S --noconfirm dust
       brew: brew install dust
-      fallback: cargo install du-dust
     uninstall:
       arch: sudo pacman -R --noconfirm dust
       brew: brew uninstall dust
@@ -669,7 +599,6 @@ tools:
         wget https://github.com/o2sh/onefetch/releases/latest/download/onefetch_amd64.deb && sudo dpkg -i ./onefetch_amd64.deb
       arch: sudo pacman -S --noconfirm onefetch
       brew: brew install onefetch
-      fallback: cargo install onefetch
     uninstall:
       arch: sudo pacman -R --noconfirm onefetch
       brew: brew uninstall onefetch
@@ -709,7 +638,6 @@ tools:
       arch: sudo pacman -S --noconfirm tealdeer
       fedora: sudo dnf install -y tealdeer
       brew: brew install tealdeer
-      fallback: cargo install tealdeer
     uninstall:
       brew: brew uninstall tealdeer
       all: rm -f /usr/local/bin/tldr
@@ -816,35 +744,3 @@ tools:
     required: false
     source_url: https://atuin.sh
 
-  - name: lazydocker
-    category: container
-    depends_on: [docker]
-    install:
-      brew: brew install lazydocker
-      all: curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-    uninstall:
-      brew: brew uninstall lazydocker
-      all: rm -f ~/.local/bin/lazydocker
-    check: lazydocker --version
-    description: "UI visual para Docker (TUI)"
-    enabled: true
-    required: false
-    source_url: https://github.com/jesseduffield/lazydocker
-
-  - name: docker-filemanager
-    category: container
-    depends_on: [docker]
-    install:
-      all: |
-        docker volume create portainer_data
-        docker run -d --name portainer -p 9443:9443 --restart=always \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -v portainer_data:/data \
-          portainer/portainer-ce:latest
-    uninstall:
-      all: docker stop portainer && docker rm portainer && docker volume rm portainer_data
-    check: docker ps -aq --filter 'name=^portainer$' | grep -q .
-    description: "UI web para Docker (Portainer)"
-    enabled: false
-    required: false
-    source_url: https://github.com/portainer/portainer

@@ -264,7 +264,6 @@ func TestCategoryIsValid(t *testing.T) {
 		{entities.CategoryShell, true},
 		{entities.CategoryEditor, true},
 		{entities.CategoryTools, true},
-		{entities.CategoryContainer, true},
 		{entities.CategoryFonts, true},
 		{entities.Category("theme"), false},
 		{entities.Category("unknown"), false},

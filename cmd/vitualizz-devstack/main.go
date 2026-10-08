@@ -193,7 +193,7 @@ func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inD
 
 	if inDocker {
 		fmt.Println("  🐳 Docker environment detected")
-		fmt.Println("  Skipping display tools (kitty, docker, etc.)")
+		fmt.Println("  Skipping display tools (kitty)")
 		fmt.Println()
 	}
 

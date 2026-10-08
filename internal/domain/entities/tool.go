@@ -9,12 +9,8 @@ import (
 )
 
 var DockerTools = map[string]bool{
-	"kitty":          true,
-	"kitty-config":   true,
-	"docker":         true,
-	"docker-compose": true,
-	"lazydocker":     true,
-	"docker-filemanager": true,
+	"kitty":        true,
+	"kitty-config": true,
 }
 
 func IsDocker() bool {
@@ -39,13 +35,12 @@ func IsDocker() bool {
 type Category string
 
 const (
-	CategoryTerminal   Category = "terminal"
-	CategoryShell     Category = "shell"
+	CategoryTerminal Category = "terminal"
+	CategoryShell    Category = "shell"
 	CategoryEditor   Category = "editor"
 	CategoryTools    Category = "tools"
-	CategoryContainer Category = "container"
-	CategoryFonts   Category = "fonts"
-	CategoryTheme  Category = "theme"
+	CategoryFonts    Category = "fonts"
+	CategoryTheme    Category = "theme"
 )
 
 func AllCategories() []Category {
@@ -54,7 +49,6 @@ func AllCategories() []Category {
 		CategoryShell,
 		CategoryEditor,
 		CategoryTools,
-		CategoryContainer,
 		CategoryFonts,
 	}
 }
@@ -175,16 +169,16 @@ func DetectDistro() Distro {
 
 type Theme struct {
 	Name        string      `json:"name" yaml:"name"`
-	DisplayName string     `json:"display_name" yaml:"display_name"`
-	Category   Category   `json:"category" yaml:"category"`
-	Colors    ThemeColors `json:"colors" yaml:"colors"`
+	DisplayName string      `json:"display_name" yaml:"display_name"`
+	Category    Category    `json:"category" yaml:"category"`
+	Colors      ThemeColors `json:"colors" yaml:"colors"`
 }
 
 type ThemeColors struct {
-	Background  string `json:"background" yaml:"background"`
-	Foreground string `json:"foreground" yaml:"foreground"`
+	Background string        `json:"background" yaml:"background"`
+	Foreground string        `json:"foreground" yaml:"foreground"`
 	Normal     ThemeColorSet `json:"normal" yaml:"normal"`
-	Bright    ThemeColorSet `json:"bright" yaml:"bright"`
+	Bright     ThemeColorSet `json:"bright" yaml:"bright"`
 }
 
 type ThemeColorSet struct {
@@ -200,20 +194,20 @@ type ThemeColorSet struct {
 
 type Tool struct {
 	Name        string   `json:"name" yaml:"name"`
-	Category   Category `json:"category" yaml:"category"`
-	Description string  `json:"description" yaml:"description"`
+	Category    Category `json:"category" yaml:"category"`
+	Description string   `json:"description" yaml:"description"`
 
 	Install   map[Distro]string `json:"install" yaml:"install"`
 	Uninstall map[Distro]string `json:"uninstall" yaml:"uninstall"`
-	Check     string           `json:"check" yaml:"check"`
+	Check     string            `json:"check" yaml:"check"`
 
 	DependsOn []string `json:"depends_on" yaml:"depends_on"`
 
 	SourceURL    string   `json:"source_url" yaml:"source_url"`
-	Version     string   `json:"version" yaml:"version"`
+	Version      string   `json:"version" yaml:"version"`
 	Alternatives []string `json:"alternatives" yaml:"alternatives"`
 
-	Enabled bool `json:"enabled" yaml:"enabled"`
+	Enabled  bool `json:"enabled" yaml:"enabled"`
 	Required bool `json:"required" yaml:"required"`
 }
 
@@ -279,10 +273,10 @@ func FilterDockerIncompatible(tools []Tool) []Tool {
 
 type InstallResult struct {
 	ToolName   string `json:"tool_name"`
-	Success   bool   `json:"success"`
-	Message   string `json:"message"`
+	Success    bool   `json:"success"`
+	Message    string `json:"message"`
 	DurationMs int64  `json:"duration_ms"`
-	Distro    Distro `json:"distro,omitempty"`
+	Distro     Distro `json:"distro,omitempty"`
 }
 
 type Installer interface {

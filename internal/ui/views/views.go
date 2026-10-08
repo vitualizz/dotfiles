@@ -100,7 +100,7 @@ func (r *Renderer) MainMenuView() string {
 
 	output := asciiBanner() + "\n"
 	if r.Model.InDocker {
-		output += Warning("  🐳 Docker mode — display tools (kitty, docker) are skipped") + "\n"
+		output += Warning("  🐳 Docker mode — display tools (kitty) are skipped") + "\n"
 	}
 	output += "\n"
 	for i, item := range items {

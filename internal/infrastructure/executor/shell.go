@@ -21,7 +21,7 @@ func NewShellExecutor() *ShellExecutor {
 }
 
 func toolPaths() string {
-	return "$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.mise/bin:$HOME/go/bin:$HOME/.opencode/bin:" +
+	return "$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.mise/bin:$HOME/go/bin:" +
 		"/opt/homebrew/bin:/opt/homebrew/sbin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin"
 }
 

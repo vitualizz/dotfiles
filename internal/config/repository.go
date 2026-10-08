@@ -13,21 +13,21 @@ import (
 
 type ToolConfig struct {
 	Name         string            `yaml:"name"`
-	Category    string           `yaml:"category"`
-	Description string           `yaml:"description"`
-	DependsOn   []string         `yaml:"depends_on"`
-	Install     map[string]string `yaml:"install"`
-	Uninstall   map[string]string `yaml:"uninstall"`
-	Check       string           `yaml:"check"`
-	SourceURL   string           `yaml:"source_url"`
-	Version     string           `yaml:"version"`
-	Alternatives []string        `yaml:"alternatives"`
-	Enabled     bool             `yaml:"enabled"`
-	Required    bool             `yaml:"required"`
+	Category     string            `yaml:"category"`
+	Description  string            `yaml:"description"`
+	DependsOn    []string          `yaml:"depends_on"`
+	Install      map[string]string `yaml:"install"`
+	Uninstall    map[string]string `yaml:"uninstall"`
+	Check        string            `yaml:"check"`
+	SourceURL    string            `yaml:"source_url"`
+	Version      string            `yaml:"version"`
+	Alternatives []string          `yaml:"alternatives"`
+	Enabled      bool              `yaml:"enabled"`
+	Required     bool              `yaml:"required"`
 }
 
 type ThemeColorsConfig struct {
-	Background  string `yaml:"background"`
+	Background string `yaml:"background"`
 	Foreground string `yaml:"foreground"`
 	Normal     struct {
 		Black   string `yaml:"black"`
@@ -54,8 +54,8 @@ type ThemeColorsConfig struct {
 type ThemeConfig struct {
 	Name        string            `yaml:"name"`
 	DisplayName string            `yaml:"display_name"`
-	Category   string            `yaml:"category"`
-	Colors     ThemeColorsConfig `yaml:"colors"`
+	Category    string            `yaml:"category"`
+	Colors      ThemeColorsConfig `yaml:"colors"`
 }
 
 type ConfigFile struct {
@@ -119,17 +119,17 @@ func configToTool(cfg ToolConfig) entities.Tool {
 
 	return entities.Tool{
 		Name:         cfg.Name,
-		Category:    entities.Category(cfg.Category),
+		Category:     entities.Category(cfg.Category),
 		Description:  cfg.Description,
-		Install:     install,
-		Uninstall:   uninstall,
-		Check:       cfg.Check,
-		DependsOn:   dependsOn,
-		SourceURL:   cfg.SourceURL,
-		Version:     cfg.Version,
+		Install:      install,
+		Uninstall:    uninstall,
+		Check:        cfg.Check,
+		DependsOn:    dependsOn,
+		SourceURL:    cfg.SourceURL,
+		Version:      cfg.Version,
 		Alternatives: alt,
-		Enabled:    cfg.Enabled,
-		Required:   cfg.Required,
+		Enabled:      cfg.Enabled,
+		Required:     cfg.Required,
 	}
 }
 
@@ -137,9 +137,9 @@ func configToTheme(cfg ThemeConfig) entities.Theme {
 	return entities.Theme{
 		Name:        cfg.Name,
 		DisplayName: cfg.DisplayName,
-		Category:   entities.Category(cfg.Category),
+		Category:    entities.Category(cfg.Category),
 		Colors: entities.ThemeColors{
-			Background:  cfg.Colors.Background,
+			Background: cfg.Colors.Background,
 			Foreground: cfg.Colors.Foreground,
 			Normal: entities.ThemeColorSet{
 				Black:   cfg.Colors.Normal.Black,
@@ -286,26 +286,23 @@ func (r *ToolRepository) GetPackages() []interfaces.Package {
 		entities.CategoryShell,
 		entities.CategoryEditor,
 		entities.CategoryTools,
-		entities.CategoryContainer,
 		entities.CategoryFonts,
 	}
 
 	icons := map[entities.Category]string{
-		entities.CategoryTerminal:   "🖥️",
-		entities.CategoryShell:       "🐚",
+		entities.CategoryTerminal: "🖥️",
+		entities.CategoryShell:    "🐚",
 		entities.CategoryEditor:   "📝",
-		entities.CategoryTools:     "🛠️",
-		entities.CategoryContainer:  "📦",
-		entities.CategoryFonts:      "🔤",
+		entities.CategoryTools:    "🛠️",
+		entities.CategoryFonts:    "🔤",
 	}
 
 	descriptions := map[entities.Category]string{
-		entities.CategoryTerminal:   "Kitty + Tokyo Night",
-		entities.CategoryShell:       "Zsh + Starship + autosuggestions + syntax-highlighting",
+		entities.CategoryTerminal: "Kitty + Tokyo Night",
+		entities.CategoryShell:    "Zsh + Starship + autosuggestions + syntax-highlighting",
 		entities.CategoryEditor:   "Neovim",
-		entities.CategoryTools:     "fzf · bat · eza · yazi · jq · lazygit · gh · uv",
-		entities.CategoryContainer:  "Docker + Docker Compose",
-		entities.CategoryFonts:      "Hack Nerd Font",
+		entities.CategoryTools:    "fzf · bat · eza · yazi · lazygit · gh · mise",
+		entities.CategoryFonts:    "Hack · JetBrains Mono · Fira Code (Nerd Fonts)",
 	}
 
 	byCategory := make(map[entities.Category][]entities.Tool)
@@ -324,24 +321,24 @@ func (r *ToolRepository) GetPackages() []interfaces.Package {
 
 		if cat == entities.CategoryFonts {
 			pkgs = append(pkgs, interfaces.Package{
-				Name:             string(cat),
-				Label:            cases.Title(language.Und).String(string(cat)),
-				Icon:             icons[cat],
-				Description:      descriptions[cat],
-				Tools:            tools,
-				DefaultSelected:   true,
+				Name:            string(cat),
+				Label:           cases.Title(language.Und).String(string(cat)),
+				Icon:            icons[cat],
+				Description:     descriptions[cat],
+				Tools:           tools,
+				DefaultSelected: true,
 				Selected:        true,
 			})
 			continue
 		}
 
 		pkgs = append(pkgs, interfaces.Package{
-			Name:             string(cat),
-			Label:            cases.Title(language.Und).String(string(cat)),
-			Icon:             icons[cat],
-			Description:      descriptions[cat],
-			Tools:            tools,
-			DefaultSelected:   false,
+			Name:            string(cat),
+			Label:           cases.Title(language.Und).String(string(cat)),
+			Icon:            icons[cat],
+			Description:     descriptions[cat],
+			Tools:           tools,
+			DefaultSelected: false,
 			Selected:        false,
 		})
 	}
