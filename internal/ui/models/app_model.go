@@ -6,7 +6,6 @@ type ViewState int
 
 const (
 	StateLanguageSelect ViewState = iota
-	StateThemeSelect
 	StateMainMenu
 	StateProgress
 	StateThanks
@@ -17,7 +16,6 @@ const (
 type AppModel struct {
 	ViewState    ViewState
 	CurrentLang  string
-	CurrentTheme string
 	IsLoading    bool
 	MainMenuChoice int
 	SettingsChoice int
@@ -39,7 +37,6 @@ func NewAppModel() *AppModel {
 	return &AppModel{
 		ViewState:      StateLanguageSelect,
 		CurrentLang:    "es",
-		CurrentTheme:   "vitualizz",
 		MainMenuChoice: 0,
 		SettingsChoice: 0,
 		ToolChoice:     0,

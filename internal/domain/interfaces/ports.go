@@ -10,8 +10,6 @@ type ToolRepository interface {
 	GetDependencies(name string) []entities.Tool
 	GetDependents(name string) []entities.Tool
 	GetPackages() []Package
-	GetThemes() []entities.Theme
-	GetThemeByName(name string) *entities.Theme
 	Save(tool entities.Tool)
 }
 

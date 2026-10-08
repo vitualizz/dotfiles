@@ -53,8 +53,6 @@ func (r *mockRepo) GetByCategory(_ entities.Category) []entities.Tool     { retu
 func (r *mockRepo) GetDependencies(_ string) []entities.Tool               { return nil }
 func (r *mockRepo) GetDependents(_ string) []entities.Tool                 { return nil }
 func (r *mockRepo) GetPackages() []interfaces.Package                      { return nil }
-func (r *mockRepo) GetThemes() []entities.Theme                            { return nil }
-func (r *mockRepo) GetThemeByName(_ string) *entities.Theme                { return nil }
 func (r *mockRepo) Save(_ entities.Tool)                                   {}
 func (r *mockRepo) GetByID(name string) *entities.Tool {
 	for i := range r.tools {
