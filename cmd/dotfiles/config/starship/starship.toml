@@ -1,10 +1,10 @@
 add_newline = true
 
-format = """[](fg:13)[ ❤ ](fg:232 bg:13)$directory$git_branch$git_status[](fg:prev_bg) """
+format = """[](fg:5)[ ❤ ](fg:232 bg:5)$directory$git_branch$git_status[](fg:prev_bg) """
 
 [directory]
-style = "fg:232 bg:14"
-format = "[](fg:prev_bg bg:14)[ $path$read_only ]($style)"
+style = "fg:232 bg:6"
+format = "[](fg:prev_bg bg:6)[ $path$read_only ]($style)"
 truncation_length = 1
 truncation_symbol = ""
 fish_style_pwd_dir_length = 1

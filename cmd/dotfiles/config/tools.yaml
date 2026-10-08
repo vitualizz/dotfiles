@@ -1,29 +1,3 @@
-themes:
-  - name: vitualizz
-    display_name: "Vitualizz"
-    category: theme
-    colors:
-      background: "0x1A1B26"
-      foreground: "0xC0CAF5"
-      normal:
-        black: "0x414868"
-        red: "0xF7768E"
-        green: "0x73DACA"
-        yellow: "0xE0AF68"
-        blue: "0x7AA2F7"
-        magenta: "0xBB9AF7"
-        cyan: "0x7DCFFF"
-        white: "0xC0CAF5"
-      bright:
-        black: "0x414868"
-        red: "0xF7768E"
-        green: "0x73DACA"
-        yellow: "0xE0AF68"
-        blue: "0x7AA2F7"
-        magenta: "0xBB9AF7"
-        cyan: "0x7DCFFF"
-        white: "0xC0CAF5"
-
 tools:
   - name: kitty
     category: terminal
@@ -54,7 +28,7 @@ tools:
     uninstall:
       all: echo "~/.config/kitty es tuyo; no se modifica"
     check: test -e ~/.config/kitty/kitty.conf
-    description: "Siembra kitty.conf y el tema Vitualizz si no existen"
+    description: "Siembra kitty.conf y el tema Tokyo Night si no existen"
     enabled: true
     required: false
 

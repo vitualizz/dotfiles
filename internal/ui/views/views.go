@@ -22,8 +22,6 @@ func (r *Renderer) View() string {
 	switch r.Model.ViewState {
 	case models.StateLanguageSelect:
 		return r.LanguageSelectView()
-	case models.StateThemeSelect:
-		return r.ThemeSelectView()
 	case models.StateMainMenu:
 		return r.MainMenuView()
 	case models.StateThanks:
@@ -66,26 +64,6 @@ func (r *Renderer) LanguageSelectView() string {
 		}
 	}
 	output += "\n" + Footer("↑↓: " + r.I18n.T("select_option") + " | Enter: " + r.I18n.T("confirm"))
-	return output
-}
-
-func (r *Renderer) ThemeSelectView() string {
-	themes := r.Repo.GetThemes()
-	output := Header("Vitualizz Dotfiles - Themes") + "\n\n"
-
-	if len(themes) == 0 {
-		output += Warning(r.I18n.T("no_tools_found"))
-		return output
-	}
-
-	for i, theme := range themes {
-		if i == r.Model.ToolChoice {
-			output += Selected("► " + theme.DisplayName) + "\n"
-		} else {
-			output += Unselected("  " + theme.DisplayName) + "\n"
-		}
-	}
-	output += "\n" + Footer("↑↓: " + r.I18n.T("select_option") + " | Enter: " + r.I18n.T("confirm") + " | Esc: " + r.I18n.T("back"))
 	return output
 }
 
@@ -274,7 +252,6 @@ func (r *Renderer) ProgressView() string {
 func (r *Renderer) SettingsView() string {
 	items := []string{
 		"🌐 " + r.I18n.T("language") + ": " + r.Model.CurrentLang,
-		"🎨 " + r.I18n.T("select_category") + ": " + r.Model.CurrentTheme,
 		"⬅️ " + r.I18n.T("back"),
 	}
 
@@ -315,7 +292,7 @@ func (r *Renderer) truncate(s string, maxLen int) string {
 
 func (r *Renderer) MenuItemCount() int { return 5 }
 
-func (r *Renderer) SettingsItemCount() int { return 3 }
+func (r *Renderer) SettingsItemCount() int { return 2 }
 
 func asciiBanner() string {
 	const cyanBold = "\033[36m\033[1m"

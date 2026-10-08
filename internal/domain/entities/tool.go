@@ -40,7 +40,6 @@ const (
 	CategoryEditor   Category = "editor"
 	CategoryTools    Category = "tools"
 	CategoryFonts    Category = "fonts"
-	CategoryTheme    Category = "theme"
 )
 
 func AllCategories() []Category {
@@ -165,31 +164,6 @@ func DetectDistro() Distro {
 	}
 
 	return ""
-}
-
-type Theme struct {
-	Name        string      `json:"name" yaml:"name"`
-	DisplayName string      `json:"display_name" yaml:"display_name"`
-	Category    Category    `json:"category" yaml:"category"`
-	Colors      ThemeColors `json:"colors" yaml:"colors"`
-}
-
-type ThemeColors struct {
-	Background string        `json:"background" yaml:"background"`
-	Foreground string        `json:"foreground" yaml:"foreground"`
-	Normal     ThemeColorSet `json:"normal" yaml:"normal"`
-	Bright     ThemeColorSet `json:"bright" yaml:"bright"`
-}
-
-type ThemeColorSet struct {
-	Black   string `json:"black" yaml:"black"`
-	Red     string `json:"red" yaml:"red"`
-	Green   string `json:"green" yaml:"green"`
-	Yellow  string `json:"yellow" yaml:"yellow"`
-	Blue    string `json:"blue" yaml:"blue"`
-	Magenta string `json:"magenta" yaml:"magenta"`
-	Cyan    string `json:"cyan" yaml:"cyan"`
-	White   string `json:"white" yaml:"white"`
 }
 
 type Tool struct {

@@ -26,46 +26,12 @@ type ToolConfig struct {
 	Required     bool              `yaml:"required"`
 }
 
-type ThemeColorsConfig struct {
-	Background string `yaml:"background"`
-	Foreground string `yaml:"foreground"`
-	Normal     struct {
-		Black   string `yaml:"black"`
-		Red     string `yaml:"red"`
-		Green   string `yaml:"green"`
-		Yellow  string `yaml:"yellow"`
-		Blue    string `yaml:"blue"`
-		Magenta string `yaml:"magenta"`
-		Cyan    string `yaml:"cyan"`
-		White   string `yaml:"white"`
-	} `yaml:"normal"`
-	Bright struct {
-		Black   string `yaml:"black"`
-		Red     string `yaml:"red"`
-		Green   string `yaml:"green"`
-		Yellow  string `yaml:"yellow"`
-		Blue    string `yaml:"blue"`
-		Magenta string `yaml:"magenta"`
-		Cyan    string `yaml:"cyan"`
-		White   string `yaml:"white"`
-	} `yaml:"bright"`
-}
-
-type ThemeConfig struct {
-	Name        string            `yaml:"name"`
-	DisplayName string            `yaml:"display_name"`
-	Category    string            `yaml:"category"`
-	Colors      ThemeColorsConfig `yaml:"colors"`
-}
-
 type ConfigFile struct {
 	Tools  []ToolConfig  `yaml:"tools"`
-	Themes []ThemeConfig `yaml:"themes"`
 }
 
 type ToolRepository struct {
 	tools  []entities.Tool
-	themes []entities.Theme
 }
 
 func NewToolRepository(path string) (*ToolRepository, error) {
@@ -84,12 +50,7 @@ func NewToolRepository(path string) (*ToolRepository, error) {
 		tools = append(tools, configToTool(t))
 	}
 
-	themes := make([]entities.Theme, 0, len(cfg.Themes))
-	for _, t := range cfg.Themes {
-		themes = append(themes, configToTheme(t))
-	}
-
-	return &ToolRepository{tools: tools, themes: themes}, nil
+	return &ToolRepository{tools: tools}, nil
 }
 
 func configToTool(cfg ToolConfig) entities.Tool {
@@ -130,38 +91,6 @@ func configToTool(cfg ToolConfig) entities.Tool {
 		Alternatives: alt,
 		Enabled:      cfg.Enabled,
 		Required:     cfg.Required,
-	}
-}
-
-func configToTheme(cfg ThemeConfig) entities.Theme {
-	return entities.Theme{
-		Name:        cfg.Name,
-		DisplayName: cfg.DisplayName,
-		Category:    entities.Category(cfg.Category),
-		Colors: entities.ThemeColors{
-			Background: cfg.Colors.Background,
-			Foreground: cfg.Colors.Foreground,
-			Normal: entities.ThemeColorSet{
-				Black:   cfg.Colors.Normal.Black,
-				Red:     cfg.Colors.Normal.Red,
-				Green:   cfg.Colors.Normal.Green,
-				Yellow:  cfg.Colors.Normal.Yellow,
-				Blue:    cfg.Colors.Normal.Blue,
-				Magenta: cfg.Colors.Normal.Magenta,
-				Cyan:    cfg.Colors.Normal.Cyan,
-				White:   cfg.Colors.Normal.White,
-			},
-			Bright: entities.ThemeColorSet{
-				Black:   cfg.Colors.Bright.Black,
-				Red:     cfg.Colors.Bright.Red,
-				Green:   cfg.Colors.Bright.Green,
-				Yellow:  cfg.Colors.Bright.Yellow,
-				Blue:    cfg.Colors.Bright.Blue,
-				Magenta: cfg.Colors.Bright.Magenta,
-				Cyan:    cfg.Colors.Bright.Cyan,
-				White:   cfg.Colors.Bright.White,
-			},
-		},
 	}
 }
 
@@ -265,19 +194,6 @@ func (r *ToolRepository) Save(tool entities.Tool) {
 		}
 	}
 	r.tools = append(r.tools, tool)
-}
-
-func (r *ToolRepository) GetThemes() []entities.Theme {
-	return r.themes
-}
-
-func (r *ToolRepository) GetThemeByName(name string) *entities.Theme {
-	for _, t := range r.themes {
-		if t.Name == name {
-			return &t
-		}
-	}
-	return nil
 }
 
 func (r *ToolRepository) GetPackages() []interfaces.Package {

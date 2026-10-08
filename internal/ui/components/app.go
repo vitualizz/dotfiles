@@ -85,8 +85,6 @@ func (a *App) handleKey(key string) (tea.Model, tea.Cmd) {
 	switch a.model.ViewState {
 	case models.StateLanguageSelect:
 		return a.handleLanguageSelect(key)
-	case models.StateThemeSelect:
-		return a.handleThemeSelect(key)
 	case models.StateMainMenu:
 		return a.handleMainMenu(key)
 	case models.StateThanks:
@@ -136,33 +134,7 @@ func (a *App) handleLanguageSelect(key string) (tea.Model, tea.Cmd) {
 			a.i18n.SetLanguage("en")
 		}
 		a.model.SettingsChoice = 0
-		a.model.ViewState = models.StateThemeSelect
-	}
-	return a, nil
-}
-
-func (a *App) handleThemeSelect(key string) (tea.Model, tea.Cmd) {
-	themes := a.repo.GetThemes()
-	maxChoice := len(themes) - 1
-
-	switch key {
-	case "up":
-		if a.model.ToolChoice > 0 {
-			a.model.ToolChoice--
-		}
-	case "down":
-		if a.model.ToolChoice < maxChoice {
-			a.model.ToolChoice++
-		}
-	case "enter":
-		if len(themes) > 0 {
-			a.model.CurrentTheme = themes[a.model.ToolChoice].Name
-		}
-		a.model.ToolChoice = 0
 		a.model.ViewState = models.StateMainMenu
-	case "esc":
-		a.model.SettingsChoice = 0
-		a.model.ViewState = models.StateLanguageSelect
 	}
 	return a, nil
 }
@@ -286,9 +258,6 @@ func (a *App) handleSettings(key string) (tea.Model, tea.Cmd) {
 				a.i18n.SetLanguage("es")
 			}
 		case 1:
-			a.model.ViewState = models.StateThemeSelect
-			a.model.ToolChoice = 0
-		case 2:
 			a.model.ViewState = models.StateMainMenu
 		}
 	case "esc":

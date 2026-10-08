@@ -10,32 +10,6 @@ import (
 )
 
 const testYAML = `
-themes:
-  - name: test-theme
-    display_name: "Test Theme"
-    category: theme
-    colors:
-      background: "0x1A1B26"
-      foreground: "0xC0CAF5"
-      normal:
-        black: "0x414868"
-        red: "0xF7768E"
-        green: "0x73DACA"
-        yellow: "0xE0AF68"
-        blue: "0x7AA2F7"
-        magenta: "0xBB9AF7"
-        cyan: "0x7DCFFF"
-        white: "0xC0CAF5"
-      bright:
-        black: "0x414868"
-        red: "0xF7768E"
-        green: "0x73DACA"
-        yellow: "0xE0AF68"
-        blue: "0x7AA2F7"
-        magenta: "0xBB9AF7"
-        cyan: "0x7DCFFF"
-        white: "0xC0CAF5"
-
 tools:
   - name: tool-a
     category: tools
@@ -276,32 +250,3 @@ func TestSave(t *testing.T) {
 	})
 }
 
-func TestGetThemes(t *testing.T) {
-	repo := newTestRepo(t)
-
-	themes := repo.GetThemes()
-	if len(themes) != 1 {
-		t.Errorf("GetThemes() returned %d themes, want 1", len(themes))
-	}
-	if themes[0].Name != "test-theme" {
-		t.Errorf("theme name = %q, want %q", themes[0].Name, "test-theme")
-	}
-}
-
-func TestGetThemeByName(t *testing.T) {
-	repo := newTestRepo(t)
-
-	t.Run("existing theme", func(t *testing.T) {
-		got := repo.GetThemeByName("test-theme")
-		if got == nil {
-			t.Error("GetThemeByName() = nil, want theme")
-		}
-	})
-
-	t.Run("nonexistent theme", func(t *testing.T) {
-		got := repo.GetThemeByName("nord")
-		if got != nil {
-			t.Errorf("GetThemeByName(nord) = %v, want nil", got)
-		}
-	})
-}
