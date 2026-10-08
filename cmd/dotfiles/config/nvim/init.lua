@@ -95,9 +95,7 @@ do
   -- Install new plugins without asking for confirmation. Any call can still
   -- pass `{ confirm = true }` to override it. See `:help vim.pack.add()`
   local pack_add = vim.pack.add
-  vim.pack.add = function(specs, opts)
-    return pack_add(specs, vim.tbl_extend('keep', opts or {}, { confirm = false }))
-  end
+  vim.pack.add = function(specs, opts) return pack_add(specs, vim.tbl_extend('keep', opts or {}, { confirm = false })) end
 
   -- Set <space> as the leader key
   -- See `:help mapleader`
@@ -1024,7 +1022,7 @@ do
   -- require 'kickstart.plugins.debug'
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.autopairs'
   -- require 'kickstart.plugins.neo-tree'
 
   -- NOTE: You can add your own plugins, configuration, etc. in `lua/custom/plugins/*.lua`.
@@ -1040,6 +1038,8 @@ do
   -- require 'custom.plugins.colorscheme'
   -- require 'custom.plugins.ui'
   -- require 'custom.plugins.git'
+
+  require 'custom.plugins.snacks'
 end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
