@@ -109,11 +109,12 @@ func main() {
 }
 
 func preflight(distro entities.Distro) error {
+	if os.Geteuid() == 0 && (distro.IsMacOS() || os.Getenv("SUDO_USER") != "") {
+		return errors.New("do not run with sudo: config would be installed for root instead of your user. " +
+			"Re-run without sudo; DevStack asks for your password when a tool needs it")
+	}
 	if !distro.IsMacOS() {
 		return nil
-	}
-	if os.Geteuid() == 0 {
-		return errors.New("do not run as root on macOS (Homebrew refuses to run with sudo). Re-run without sudo")
 	}
 	if _, err := exec.LookPath("brew"); err != nil {
 		for _, p := range []string{"/opt/homebrew/bin/brew", "/usr/local/bin/brew"} {
@@ -287,7 +288,7 @@ func runTUI(repo *config.ToolRepository, installer *installers.ToolInstaller, i1
 		logPath = log.LogPath()
 	}
 
-	app := components.NewApp(repo, installer, i18n, logPath)
+	app := components.NewApp(repo, installer, installer, i18n, logPath)
 
 	p := tea.NewProgram(app, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {

@@ -56,12 +56,7 @@ release:
 
     ### Quick Install
 
-    Linux:
-    ```bash
-    curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | sudo bash
-    ```
-
-    macOS (requires [Homebrew](https://brew.sh), no sudo):
+    Linux and macOS (macOS requires [Homebrew](https://brew.sh)). No `sudo`: it asks for your password when needed.
     ```bash
     curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | bash
     ```

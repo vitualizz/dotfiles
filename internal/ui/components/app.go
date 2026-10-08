@@ -1,6 +1,8 @@
 package components
 
 import (
+	"os/exec"
+
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
@@ -15,17 +17,19 @@ type App struct {
 	model        *models.AppModel
 	repo         interfaces.ToolRepository
 	installer    interfaces.InstallerPort
+	sudo         interfaces.SudoPort
 	batchInstall *usecases.BatchInstallUseCase
 	i18n         *locales.I18nSimple
 	renderer     *views.Renderer
 	inDocker     bool
 }
 
-func NewApp(repo interfaces.ToolRepository, installer interfaces.InstallerPort, i18n *locales.I18nSimple, logPath string) *App {
+func NewApp(repo interfaces.ToolRepository, installer interfaces.InstallerPort, sudo interfaces.SudoPort, i18n *locales.I18nSimple, logPath string) *App {
 	app := &App{
 		model:        models.NewAppModel(),
 		repo:         repo,
 		installer:    installer,
+		sudo:         sudo,
 		batchInstall: usecases.NewBatchInstallUseCase(installer, repo),
 		i18n:         i18n,
 		inDocker:     entities.IsDocker(),
@@ -50,6 +54,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a.handleKey(msg.String())
 	case tea.WindowSizeMsg:
 		return a, nil
+	case sudoReadyMsg:
+		a.sudo.SudoReady(msg.ok)
+		return a, a.next()
 	case progressUpdateMsg:
 		a.model.UpdateProgress(msg.tool, msg.success, msg.message)
 		if a.model.IsProgressDone() {
@@ -180,7 +187,7 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 			ordered := a.batchInstall.ResolveInstallOrder(allTools)
 			a.model.StartProgress(ordered)
 			a.model.IsLoading = true
-			return a, a.installNext()
+			return a, a.start(ordered)
 		case 1:
 			installed := a.getInstalledTools()
 			if len(installed) == 0 {
@@ -192,7 +199,7 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 			}
 			a.model.StartUninstallProgress(installed)
 			a.model.IsLoading = true
-			return a, a.uninstallNext()
+			return a, a.start(installed)
 		case 2:
 			a.model.ViewState = models.StateSettings
 		case 3:
@@ -202,6 +209,23 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 		}
 	}
 	return a, nil
+}
+
+func (a *App) start(tools []entities.Tool) tea.Cmd {
+	if !a.sudo.NeedsSudo(tools, a.model.IsUninstallMode) {
+		return a.next()
+	}
+	prompt := exec.Command("sudo", "-v", "-p", "Some tools need administrator rights. Password for %u: ")
+	return tea.ExecProcess(prompt, func(err error) tea.Msg {
+		return sudoReadyMsg{ok: err == nil}
+	})
+}
+
+func (a *App) next() tea.Cmd {
+	if a.model.IsUninstallMode {
+		return a.uninstallNext()
+	}
+	return a.installNext()
 }
 
 func (a *App) installNext() tea.Cmd {
@@ -293,6 +317,10 @@ func (a *App) getInstalledTools() []entities.Tool {
 
 func (a *App) View() string {
 	return a.renderer.View()
+}
+
+type sudoReadyMsg struct {
+	ok bool
 }
 
 type progressUpdateMsg struct {
