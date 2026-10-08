@@ -53,6 +53,18 @@ var _ = Describe("ToolInstaller", func() {
 			})
 		})
 
+		Context("when check command succeeds silently", func() {
+			It("should return true", func() {
+				tool := &entities.Tool{
+					Name:  "silent",
+					Check: "test -d /",
+				}
+				installed, err := installer.IsInstalled(tool)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(installed).To(BeTrue())
+			})
+		})
+
 		Context("when check command succeeds", func() {
 			It("should return true", func() {
 				tool := &entities.Tool{

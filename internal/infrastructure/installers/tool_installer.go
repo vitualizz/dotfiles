@@ -9,15 +9,13 @@ import (
 	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/logger"
 )
 
-// ToolInstaller handles installation and uninstallation of tools.
 type ToolInstaller struct {
 	exec      *executor.ShellExecutor
 	distro    entities.Distro
-	configDir string // path to config directory (for $DEVSTACK_CONFIG)
+	configDir string
 	log       *logger.InstallLogger
 }
 
-// NewToolInstaller creates a new installer and auto-detects the distro.
 func NewToolInstaller() *ToolInstaller {
 	return &ToolInstaller{
 		exec:   executor.NewShellExecutor(),
@@ -25,7 +23,6 @@ func NewToolInstaller() *ToolInstaller {
 	}
 }
 
-// NewToolInstallerWithDistro creates a new installer for a specific distro.
 func NewToolInstallerWithDistro(distro entities.Distro) *ToolInstaller {
 	return &ToolInstaller{
 		exec:   executor.NewShellExecutor(),
@@ -33,7 +30,6 @@ func NewToolInstallerWithDistro(distro entities.Distro) *ToolInstaller {
 	}
 }
 
-// SetLogger sets the install logger.
 func (i *ToolInstaller) SetLogger(l *logger.InstallLogger) {
 	i.log = l
 	i.exec.LogFunc = func(toolName, command string, output string, err error, duration time.Duration) {
@@ -48,7 +44,6 @@ func (i *ToolInstaller) SetLogger(l *logger.InstallLogger) {
 	}
 }
 
-// SetConfigDir sets the config directory path for $DEVSTACK_CONFIG resolution.
 func (i *ToolInstaller) SetConfigDir(dir string) {
 	i.configDir = dir
 	if dir != "" {
@@ -56,12 +51,14 @@ func (i *ToolInstaller) SetConfigDir(dir string) {
 	}
 }
 
-// Distro returns the detected distro.
+func (i *ToolInstaller) SetDetached(detached bool) {
+	i.exec.Detached = detached
+}
+
 func (i *ToolInstaller) Distro() entities.Distro {
 	return i.distro
 }
 
-// Install executes the install command for the given tool.
 func (i *ToolInstaller) Install(tool *entities.Tool) (*entities.InstallResult, error) {
 	start := time.Now()
 
@@ -77,10 +74,8 @@ func (i *ToolInstaller) Install(tool *entities.Tool) (*entities.InstallResult, e
 		return result, nil
 	}
 
-	// Set tool name for logging
 	i.exec.ToolName = tool.Name
 
-	// Log command start
 	if i.log != nil {
 		i.log.LogCommand(tool.Name, cmd)
 	}
@@ -99,7 +94,6 @@ func (i *ToolInstaller) Install(tool *entities.Tool) (*entities.InstallResult, e
 	return result, nil
 }
 
-// Uninstall executes the uninstall command for the given tool.
 func (i *ToolInstaller) Uninstall(tool *entities.Tool) (*entities.InstallResult, error) {
 	start := time.Now()
 
@@ -115,10 +109,8 @@ func (i *ToolInstaller) Uninstall(tool *entities.Tool) (*entities.InstallResult,
 		return result, nil
 	}
 
-	// Set tool name for logging
 	i.exec.ToolName = tool.Name
 
-	// Log command start
 	if i.log != nil {
 		i.log.LogCommand(tool.Name, cmd)
 	}
@@ -137,25 +129,17 @@ func (i *ToolInstaller) Uninstall(tool *entities.Tool) (*entities.InstallResult,
 	return result, nil
 }
 
-// IsInstalled checks if a tool is already installed.
 func (i *ToolInstaller) IsInstalled(tool *entities.Tool) (bool, error) {
 	if tool.Check == "" {
 		return false, nil
 	}
 
-	// Set tool name so log entries are correct (even though we skip logging checks)
 	i.exec.ToolName = tool.Name
 
-	// Don't log check commands to avoid noise
-	output, err := i.exec.ExecuteWithOutput(tool.Check)
-	if err != nil {
-		return false, nil
-	}
-
-	return strings.TrimSpace(output) != "", nil
+	_, err := i.exec.ExecuteWithOutput(tool.Check)
+	return err == nil, nil
 }
 
-// formatError returns a user-friendly error message.
 func formatError(output string, err error) string {
 	if output != "" {
 		return strings.TrimSpace(output)
@@ -163,7 +147,6 @@ func formatError(output string, err error) string {
 	return err.Error()
 }
 
-// cleanOutput removes common noise from command output.
 func cleanOutput(output string) string {
 	lines := strings.Split(output, "\n")
 	var clean []string
@@ -188,5 +171,4 @@ func cleanOutput(output string) string {
 	return strings.Join(clean, "\n")
 }
 
-// Compile-time interface check
 var _ entities.Installer = (*ToolInstaller)(nil)

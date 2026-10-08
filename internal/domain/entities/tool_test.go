@@ -1,6 +1,8 @@
 package entities_test
 
 import (
+	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
@@ -11,6 +13,8 @@ func TestGetInstallCmd(t *testing.T) {
 	deb := "apt-get install -y foo"
 	all := "curl install.sh | sh"
 	fallback := "cargo install foo"
+	brew := "brew install foo"
+	macos := "xcode-select --install"
 
 	tests := []struct {
 		name    string
@@ -18,6 +22,54 @@ func TestGetInstallCmd(t *testing.T) {
 		distro  entities.Distro
 		want    string
 	}{
+		{
+			name:    "macos key wins over brew on macOS",
+			install: map[entities.Distro]string{entities.DistroMacOS: macos, entities.DistroBrew: brew},
+			distro:  entities.DistroMacOS,
+			want:    macos,
+		},
+		{
+			name:    "brew wins over all on macOS",
+			install: map[entities.Distro]string{entities.DistroBrew: brew, entities.DistroAll: all},
+			distro:  entities.DistroMacOS,
+			want:    brew,
+		},
+		{
+			name:    "all used on macOS when no brew command",
+			install: map[entities.Distro]string{entities.DistroAll: all, entities.DistroDebian: deb},
+			distro:  entities.DistroMacOS,
+			want:    all,
+		},
+		{
+			name:    "fallback used on macOS as last resort",
+			install: map[entities.Distro]string{entities.DistroFallback: fallback, entities.DistroArch: arch},
+			distro:  entities.DistroMacOS,
+			want:    fallback,
+		},
+		{
+			name:    "macOS never falls back to Linux distro commands",
+			install: map[entities.Distro]string{entities.DistroArch: arch, entities.DistroDebian: deb},
+			distro:  entities.DistroMacOS,
+			want:    "",
+		},
+		{
+			name:    "Linux skips brew and uses fallback",
+			install: map[entities.Distro]string{entities.DistroBrew: brew, entities.DistroFallback: fallback},
+			distro:  entities.DistroDebian,
+			want:    fallback,
+		},
+		{
+			name:    "brew used when it is the detected package manager",
+			install: map[entities.Distro]string{entities.DistroBrew: brew, entities.DistroFallback: fallback},
+			distro:  entities.DistroBrew,
+			want:    brew,
+		},
+		{
+			name:    "Linux never picks the macos key",
+			install: map[entities.Distro]string{entities.DistroMacOS: macos},
+			distro:  entities.DistroDebian,
+			want:    "",
+		},
 		{
 			name:    "exact distro match",
 			install: map[entities.Distro]string{entities.DistroArch: arch},
@@ -100,6 +152,12 @@ func TestGetUninstallCmd(t *testing.T) {
 			uninstall: map[entities.Distro]string{entities.DistroAll: all},
 			distro:    entities.DistroFedora,
 			want:      all,
+		},
+		{
+			name:      "macOS uses brew uninstall instead of Linux commands",
+			uninstall: map[entities.Distro]string{entities.DistroArch: arch, entities.DistroBrew: "brew uninstall foo"},
+			distro:    entities.DistroMacOS,
+			want:      "brew uninstall foo",
 		},
 		{
 			name:      "empty returns empty",
@@ -223,7 +281,6 @@ func TestCategoryIsValid(t *testing.T) {
 }
 
 func TestDistroDetectionOrder(t *testing.T) {
-	// Verifica que fallback esté al final del detection order
 	order := entities.DistroDetectionOrder
 	if len(order) == 0 {
 		t.Fatal("DistroDetectionOrder is empty")
@@ -284,12 +341,6 @@ func TestReleaseFileFor(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// releaseFileFor is unexported, so we test it indirectly through
-			// the DetectDistro fallback behavior. For direct unit testing we
-			// use a package-level function or make it exported.
-			// Since it's unexported, we test the observable behavior via
-			// DetectDistro's fallback path instead.
-			// For now, we verify the expected release file paths manually.
 			var got string
 			switch tt.distro {
 			case entities.DistroArch:
@@ -313,9 +364,6 @@ func TestReleaseFileFor(t *testing.T) {
 }
 
 func TestDetectDistroSmoke(t *testing.T) {
-	// Smoke test: DetectDistro should return a non-empty string on any
-	// supported Linux system. This is an integration-style test that reads
-	// real filesystem files (/etc/os-release or release files).
 	got := entities.DetectDistro()
 	if got == "" {
 		t.Skip("DetectDistro() returned empty — possibly running on an unsupported distro or missing /etc/os-release and package managers")
@@ -327,6 +375,7 @@ func TestDetectDistroSmoke(t *testing.T) {
 		entities.DistroSuse,
 		entities.DistroAlpine,
 		entities.DistroBrew,
+		entities.DistroMacOS,
 	}
 	for _, d := range validDistros {
 		if got == d {
@@ -335,4 +384,25 @@ func TestDetectDistroSmoke(t *testing.T) {
 		}
 	}
 	t.Errorf("DetectDistro() = %q, which is not a recognized distro constant", got)
+}
+
+func TestDetectDistroOnMacOS(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("only meaningful on macOS")
+	}
+	if got := entities.DetectDistro(); got != entities.DistroMacOS {
+		t.Errorf("DetectDistro() = %q, want %q", got, entities.DistroMacOS)
+	}
+}
+
+func TestMacOSCommandOrderExcludesLinuxDistros(t *testing.T) {
+	linux := []entities.Distro{
+		entities.DistroArch, entities.DistroDebian, entities.DistroFedora,
+		entities.DistroSuse, entities.DistroAlpine,
+	}
+	for _, d := range entities.MacOSCommandOrder {
+		if slices.Contains(linux, d) {
+			t.Errorf("MacOSCommandOrder contains Linux distro %q", d)
+		}
+	}
 }

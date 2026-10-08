@@ -11,10 +11,6 @@ import (
 	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
 )
 
-// =============================================================================
-// Config structures (parse YAML into these first)
-// =============================================================================
-
 type ToolConfig struct {
 	Name         string            `yaml:"name"`
 	Category    string           `yaml:"category"`
@@ -67,10 +63,6 @@ type ConfigFile struct {
 	Themes []ThemeConfig `yaml:"themes"`
 }
 
-// =============================================================================
-// Repository
-// =============================================================================
-
 type ToolRepository struct {
 	tools  []entities.Tool
 	themes []entities.Theme
@@ -100,7 +92,6 @@ func NewToolRepository(path string) (*ToolRepository, error) {
 	return &ToolRepository{tools: tools, themes: themes}, nil
 }
 
-// configToTool converts a YAML config to an entity.
 func configToTool(cfg ToolConfig) entities.Tool {
 	install := make(map[entities.Distro]string, len(cfg.Install))
 	for distro, cmd := range cfg.Install {
@@ -112,7 +103,6 @@ func configToTool(cfg ToolConfig) entities.Tool {
 		uninstall[entities.Distro(distro)] = cmd
 	}
 
-	// Copy dependencies (remove empty strings)
 	var dependsOn []string
 	for _, d := range cfg.DependsOn {
 		if d != "" {
@@ -120,7 +110,6 @@ func configToTool(cfg ToolConfig) entities.Tool {
 		}
 	}
 
-	// Copy alternatives (remove empty strings)
 	var alt []string
 	for _, a := range cfg.Alternatives {
 		if a != "" {
@@ -144,7 +133,6 @@ func configToTool(cfg ToolConfig) entities.Tool {
 	}
 }
 
-// configToTheme converts a YAML config to an entity.
 func configToTheme(cfg ThemeConfig) entities.Theme {
 	return entities.Theme{
 		Name:        cfg.Name,
@@ -177,18 +165,11 @@ func configToTheme(cfg ThemeConfig) entities.Theme {
 	}
 }
 
-// =============================================================================
-// Query methods
-// =============================================================================
-
 func (r *ToolRepository) GetAll() []entities.Tool {
 	return r.tools
 }
 
-// GetMainTools returns top-level tools (not dependencies of others).
-// A tool is "main" if no other tool depends on it.
 func (r *ToolRepository) GetMainTools() []entities.Tool {
-	// Build a set of all tools that are depended upon
 	depended := make(map[string]bool)
 	for _, t := range r.tools {
 		for _, dep := range t.DependsOn {
@@ -205,7 +186,6 @@ func (r *ToolRepository) GetMainTools() []entities.Tool {
 	return main
 }
 
-// GetDependents returns tools that depend on the given tool name.
 func (r *ToolRepository) GetDependents(name string) []entities.Tool {
 	var result []entities.Tool
 	for _, t := range r.tools {
@@ -219,7 +199,6 @@ func (r *ToolRepository) GetDependents(name string) []entities.Tool {
 	return result
 }
 
-// GetByCategory returns all tools in a category.
 func (r *ToolRepository) GetByCategory(category entities.Category) []entities.Tool {
 	var result []entities.Tool
 	for _, t := range r.tools {
@@ -230,7 +209,6 @@ func (r *ToolRepository) GetByCategory(category entities.Category) []entities.To
 	return result
 }
 
-// GetByID returns a tool by name.
 func (r *ToolRepository) GetByID(name string) *entities.Tool {
 	for _, t := range r.tools {
 		if t.Name == name {
@@ -240,7 +218,6 @@ func (r *ToolRepository) GetByID(name string) *entities.Tool {
 	return nil
 }
 
-// GetDependencies returns the direct dependencies of a tool.
 func (r *ToolRepository) GetDependencies(name string) []entities.Tool {
 	tool := r.GetByID(name)
 	if tool == nil {
@@ -256,7 +233,6 @@ func (r *ToolRepository) GetDependencies(name string) []entities.Tool {
 	return deps
 }
 
-// GetAllDependencies returns all dependencies (including transitive).
 func (r *ToolRepository) GetAllDependencies(name string) []entities.Tool {
 	var visited []string
 	var result []entities.Tool
@@ -281,7 +257,6 @@ func (r *ToolRepository) GetAllDependencies(name string) []entities.Tool {
 	return result
 }
 
-// Save updates or appends a tool.
 func (r *ToolRepository) Save(tool entities.Tool) {
 	for i, t := range r.tools {
 		if t.Name == tool.Name {
@@ -292,12 +267,10 @@ func (r *ToolRepository) Save(tool entities.Tool) {
 	r.tools = append(r.tools, tool)
 }
 
-// GetThemes returns all themes.
 func (r *ToolRepository) GetThemes() []entities.Theme {
 	return r.themes
 }
 
-// GetThemeByName returns a theme by name.
 func (r *ToolRepository) GetThemeByName(name string) *entities.Theme {
 	for _, t := range r.themes {
 		if t.Name == name {
@@ -307,7 +280,6 @@ func (r *ToolRepository) GetThemeByName(name string) *entities.Theme {
 	return nil
 }
 
-// GetPackages devuelve herramientas agrupadas como paquetes.
 func (r *ToolRepository) GetPackages() []interfaces.Package {
 	order := []entities.Category{
 		entities.CategoryTerminal,
@@ -329,7 +301,7 @@ func (r *ToolRepository) GetPackages() []interfaces.Package {
 
 	descriptions := map[entities.Category]string{
 		entities.CategoryTerminal:   "Kitty + Tokyo Night",
-		entities.CategoryShell:       "Zsh + Oh My Zsh + Powerlevel10k + Starship",
+		entities.CategoryShell:       "Zsh + Starship + autosuggestions + syntax-highlighting",
 		entities.CategoryEditor:   "Neovim",
 		entities.CategoryTools:     "fzf · bat · eza · yazi · jq · lazygit · gh · uv",
 		entities.CategoryContainer:  "Docker + Docker Compose",
@@ -350,7 +322,6 @@ func (r *ToolRepository) GetPackages() []interfaces.Package {
 			continue
 		}
 
-		// Fuentes: se instala por defecto pero NO se muestra en la UI
 		if cat == entities.CategoryFonts {
 			pkgs = append(pkgs, interfaces.Package{
 				Name:             string(cat),
@@ -378,7 +349,6 @@ func (r *ToolRepository) GetPackages() []interfaces.Package {
 	return pkgs
 }
 
-// slicesContains checks if a slice contains a value.
 func slicesContains[T comparable](s []T, v T) bool {
 	for _, e := range s {
 		if e == v {

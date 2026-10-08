@@ -15,6 +15,7 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
+      - darwin
     goarch:
       - amd64
       - arm64
@@ -54,8 +55,15 @@ release:
     [![Downloads](https://img.shields.io/github/downloads/vitualizz/vitualizz-devstack/{{ .Tag }}/total)](https://github.com/vitualizz/vitualizz-devstack/releases)
 
     ### Quick Install
+
+    Linux:
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/main/install.sh | sudo bash
+    curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | sudo bash
+    ```
+
+    macOS (requires [Homebrew](https://brew.sh), no sudo):
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | bash
     ```
 
 changelog:

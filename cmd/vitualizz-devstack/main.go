@@ -2,8 +2,10 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -27,7 +29,6 @@ var embeddedKitty embed.FS
 var embeddedZsh embed.FS
 
 func main() {
-	// Check for flags
 	ciMode := false
 	selfDestruct := false
 	for _, arg := range os.Args[1:] {
@@ -39,7 +40,6 @@ func main() {
 		}
 	}
 
-	// If self-destruct mode, register cleanup to delete binary on exit
 	binPath := ""
 	if selfDestruct {
 		var err error
@@ -54,16 +54,21 @@ func main() {
 		}()
 	}
 
-	// Determine config source: env override or embedded
+	if err := preflight(entities.DetectDistro()); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		if binPath != "" {
+			_ = os.Remove(binPath)
+		}
+		os.Exit(1)
+	}
+
 	var configPath string
 	var configDir string
 
 	if envPath := os.Getenv("DEVSTACK_CONFIG"); envPath != "" {
-		// Development/testing: use external config file
 		configPath = envPath
 		configDir = filepath.Dir(envPath)
 	} else {
-		// Production: extract embedded config to temp directory
 		var err error
 		configDir, err = extractEmbeddedConfig()
 		if err != nil {
@@ -80,7 +85,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize install logger
 	log, err := logger.NewInstallLogger()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not create log file: %v\n", err)
@@ -100,24 +104,39 @@ func main() {
 		return
 	}
 
+	installer.SetDetached(true)
 	runTUI(repo, installer, i18n, log)
 }
 
-// extractEmbeddedConfig extracts embedded config files to a temp directory
-// and returns the path to the temp directory.
-// Structure: tmpDir/tools.yaml, tmpDir/kitty/*, tmpDir/zsh/*
+func preflight(distro entities.Distro) error {
+	if !distro.IsMacOS() {
+		return nil
+	}
+	if os.Geteuid() == 0 {
+		return errors.New("do not run as root on macOS (Homebrew refuses to run with sudo). Re-run without sudo")
+	}
+	if _, err := exec.LookPath("brew"); err != nil {
+		for _, p := range []string{"/opt/homebrew/bin/brew", "/usr/local/bin/brew"} {
+			if _, statErr := os.Stat(p); statErr == nil {
+				return nil
+			}
+		}
+		return errors.New("homebrew is required on macOS. Install it first:\n" +
+			`  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`)
+	}
+	return nil
+}
+
 func extractEmbeddedConfig() (string, error) {
 	tmpDir, err := os.MkdirTemp("", "devstack-config-*")
 	if err != nil {
 		return "", err
 	}
 
-	// Extract tools.yaml directly to tmpDir root
 	if err := os.WriteFile(filepath.Join(tmpDir, "tools.yaml"), embeddedToolsYAML, 0o644); err != nil {
 		return "", err
 	}
 
-	// Extract kitty configs to tmpDir/kitty/
 	kittyDir := filepath.Join(tmpDir, "kitty")
 	if err := os.MkdirAll(kittyDir, 0o755); err != nil {
 		return "", err
@@ -140,7 +159,6 @@ func extractEmbeddedConfig() (string, error) {
 		}
 	}
 
-	// Extract zsh configs to tmpDir/zsh/
 	zshDir := filepath.Join(tmpDir, "zsh")
 	if err := os.MkdirAll(zshDir, 0o755); err != nil {
 		return "", err
@@ -165,10 +183,6 @@ func extractEmbeddedConfig() (string, error) {
 
 	return tmpDir, nil
 }
-
-// =============================================================================
-// CI Mode — headless installation
-// =============================================================================
 
 func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inDocker bool, log *logger.InstallLogger) {
 	fmt.Println("┌─────────────────────────────────────────────┐")
@@ -201,7 +215,6 @@ func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inD
 			continue
 		}
 
-		// Check if already installed
 		installed, _ := installer.IsInstalled(&tool)
 		if installed {
 			success++
@@ -209,7 +222,6 @@ func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inD
 			continue
 		}
 
-		// Install
 		fmt.Printf("  → %s... ", tool.Name)
 		result, err := installer.Install(&tool)
 		if err != nil || !result.Success {
@@ -257,10 +269,6 @@ func truncate(s string, maxLen int) string {
 	}
 	return s[:maxLen-3] + "..."
 }
-
-// =============================================================================
-// TUI Mode — interactive installation
-// =============================================================================
 
 func runTUI(repo *config.ToolRepository, installer *installers.ToolInstaller, i18n *locales.I18nSimple, log *logger.InstallLogger) {
 	logPath := ""
