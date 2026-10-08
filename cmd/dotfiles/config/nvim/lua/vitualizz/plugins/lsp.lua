@@ -78,6 +78,16 @@ local servers = {
       },
     },
   },
+
+  ts_ls = {},
+  eslint = {},
+}
+
+-- Not installed by Mason: ruby-lsp must come from the project's Ruby
+-- (`gem install ruby-lsp`), so it is only enabled when it is on PATH.
+-- Maps each server to the executable it needs.
+local system_servers = {
+  ruby_lsp = 'ruby-lsp',
 }
 
 vim.pack.add {
@@ -94,11 +104,15 @@ require('mason-lspconfig').setup {
 }
 
 local ensure_installed = vim.tbl_keys(servers or {})
-vim.list_extend(ensure_installed, {})
+vim.list_extend(ensure_installed, { 'prettier' })
 
 require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
 for name, server in pairs(servers) do
   vim.lsp.config(name, server)
   vim.lsp.enable(name)
+end
+
+for name, executable in pairs(system_servers) do
+  if vim.fn.executable(executable) == 1 then vim.lsp.enable(name) end
 end

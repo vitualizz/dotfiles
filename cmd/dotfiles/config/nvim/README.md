@@ -47,6 +47,16 @@ One file per concern: options and keymaps that belong to a plugin live in that p
 | `grd` `grr` `grn` `gra` `K` | Definition, references, rename, code action, hover (with an LSP) |
 | `<leader>f` | Format buffer |
 
+## Languages
+
+| Language | LSP | Formatter | Requires |
+|----------|-----|-----------|----------|
+| Lua | `lua_ls` | `stylua` | nothing (Mason) |
+| TypeScript / JavaScript | `ts_ls`, `eslint` | `prettier` (the project's own if installed) | Node on PATH, e.g. `mise use -g node@lts` (Mason installs the servers with npm) |
+| Ruby | `ruby_lsp` | RuboCop, through ruby-lsp, when the project uses it | `gem install ruby-lsp` for each Ruby version (e.g. from mise). Not installed by Mason; enabled only if `ruby-lsp` is on PATH |
+
+Servers and formatters are listed in `plugins/lsp.lua` and `plugins/format.lua`; syntax parsers in `plugins/treesitter.lua`. Formatting runs with `<leader>f` (not on save).
+
 ## Customizing
 
 - **Start screen art**: replace the string in `lua/vitualizz/dashboard/header.lua` (up to ~60 columns).

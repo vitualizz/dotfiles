@@ -14,7 +14,13 @@ require('conform').setup {
   default_format_opts = {
     lsp_format = 'fallback',
   },
-  formatters_by_ft = {},
+  formatters_by_ft = {
+    javascript = { 'prettier' },
+    javascriptreact = { 'prettier' },
+    typescript = { 'prettier' },
+    typescriptreact = { 'prettier' },
+    json = { 'prettier' },
+  },
 }
 
 vim.keymap.set({ 'n', 'v' }, '<leader>f', function() require('conform').format { async = true } end, { desc = '[F]ormat buffer' })

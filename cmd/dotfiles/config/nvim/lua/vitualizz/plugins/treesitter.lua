@@ -2,7 +2,25 @@ local gh = require('vitualizz.pack').gh
 
 vim.pack.add { { src = gh 'nvim-treesitter/nvim-treesitter', version = 'main' } }
 
-local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+local parsers = {
+  'bash',
+  'c',
+  'diff',
+  'html',
+  'javascript',
+  'jsdoc',
+  'json',
+  'lua',
+  'luadoc',
+  'markdown',
+  'markdown_inline',
+  'query',
+  'ruby',
+  'tsx',
+  'typescript',
+  'vim',
+  'vimdoc',
+}
 require('nvim-treesitter').install(parsers)
 
 local function treesitter_try_attach(buf, language)
