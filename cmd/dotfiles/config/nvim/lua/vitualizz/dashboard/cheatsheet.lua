@@ -1,6 +1,6 @@
 -- Keymaps shown in the start screen's second column, grouped by topic.
 -- This list is only documentation: keymaps are defined in init.lua and
--- lua/custom/plugins/*.lua. Keep both in sync when changing a keymap.
+-- lua/vitualizz/plugins/*.lua. Keep both in sync when changing a keymap.
 
 local groups = {
   {

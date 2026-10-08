@@ -2,10 +2,12 @@
 -- file explorer, terminal, lazygit, indent guides and notifications.
 -- https://github.com/folke/snacks.nvim
 
-vim.pack.add { { src = 'https://github.com/folke/snacks.nvim', version = vim.version.range '2.*' } }
+local gh = require('vitualizz.pack').gh
+
+vim.pack.add { { src = gh 'folke/snacks.nvim', version = vim.version.range '2.*' } }
 
 require('snacks').setup {
-  dashboard = require 'custom.dashboard',
+  dashboard = require 'vitualizz.dashboard',
   explorer = { enabled = true, replace_netrw = true },
   indent = { enabled = true },
   notifier = { enabled = true },

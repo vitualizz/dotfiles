@@ -6,7 +6,7 @@
 return {
   enabled = true,
   preset = {
-    header = require 'custom.dashboard.header',
+    header = require 'vitualizz.dashboard.header',
     keys = {
       { icon = ' ', key = 'f', desc = 'Find file', action = ":lua Snacks.dashboard.pick('files')" },
       { icon = ' ', key = 'g', desc = 'Find text', action = ":lua Snacks.dashboard.pick('live_grep')" },
@@ -19,6 +19,6 @@ return {
   sections = {
     { section = 'header' },
     { section = 'keys', gap = 1, padding = 1 },
-    require 'custom.dashboard.cheatsheet',
+    require 'vitualizz.dashboard.cheatsheet',
   },
 }
