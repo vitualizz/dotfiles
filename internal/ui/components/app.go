@@ -207,6 +207,11 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 func (a *App) installNext() tea.Cmd {
 	tool := a.model.GetCurrentProgressTool()
 	toolPtr := &tool
+	if dep := entities.FailedDependency(tool, a.model.ProgressStatus); dep != "" {
+		return func() tea.Msg {
+			return progressUpdateMsg{tool: tool, success: false, message: "skipped: dependency " + dep + " failed"}
+		}
+	}
 	return func() tea.Msg {
 		installed, _ := a.installer.IsInstalled(toolPtr)
 		if installed {

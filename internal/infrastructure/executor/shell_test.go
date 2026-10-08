@@ -3,6 +3,7 @@ package executor_test
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/executor"
 )
@@ -133,5 +134,28 @@ func TestExecuteWithOutput_DetachedHasNoControllingTTY(t *testing.T) {
 	e.Detached = true
 	if _, err := e.ExecuteWithOutput("exec 3</dev/tty"); err == nil {
 		t.Error("detached command could open /dev/tty, want failure")
+	}
+}
+
+func TestCheck_DoesNotLog(t *testing.T) {
+	e := executor.NewShellExecutor()
+	logged := 0
+	e.LogFunc = func(string, string, string, error, time.Duration) { logged++ }
+
+	if err := e.Check("exit 1"); err == nil {
+		t.Error("Check(exit 1) error = nil, want error")
+	}
+	if err := e.Check("true"); err != nil {
+		t.Errorf("Check(true) error = %v, want nil", err)
+	}
+	if logged != 0 {
+		t.Errorf("Check logged %d times, want 0", logged)
+	}
+
+	if _, err := e.ExecuteWithOutput("true"); err != nil {
+		t.Fatal(err)
+	}
+	if logged != 1 {
+		t.Errorf("ExecuteWithOutput logged %d times, want 1", logged)
 	}
 }

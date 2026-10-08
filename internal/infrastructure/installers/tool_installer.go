@@ -134,10 +134,7 @@ func (i *ToolInstaller) IsInstalled(tool *entities.Tool) (bool, error) {
 		return false, nil
 	}
 
-	i.exec.ToolName = tool.Name
-
-	_, err := i.exec.ExecuteWithOutput(tool.Check)
-	return err == nil, nil
+	return i.exec.Check(tool.Check) == nil, nil
 }
 
 func formatError(output string, err error) string {

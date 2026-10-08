@@ -406,3 +406,25 @@ func TestMacOSCommandOrderExcludesLinuxDistros(t *testing.T) {
 		}
 	}
 }
+
+func TestFailedDependency(t *testing.T) {
+	tool := entities.Tool{Name: "docker-compose", DependsOn: []string{"zsh", "docker"}}
+
+	tests := []struct {
+		name   string
+		status map[string]bool
+		want   string
+	}{
+		{"no results yet", map[string]bool{}, ""},
+		{"dependencies succeeded", map[string]bool{"zsh": true, "docker": true}, ""},
+		{"dependency failed", map[string]bool{"zsh": true, "docker": false}, "docker"},
+		{"unrelated failure", map[string]bool{"kitty": false}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := entities.FailedDependency(tool, tt.status); got != tt.want {
+				t.Errorf("FailedDependency() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}

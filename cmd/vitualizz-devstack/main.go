@@ -209,6 +209,7 @@ func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inD
 	fmt.Printf("  Installing %d tools...\n\n", total)
 
 	var success, failed int
+	status := make(map[string]bool, total)
 	for _, tool := range allTools {
 		if !tool.HasInstallCommand() {
 			fmt.Printf("  ⊘ %s (bundle)\n", tool.Name)
@@ -218,13 +219,23 @@ func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inD
 		installed, _ := installer.IsInstalled(&tool)
 		if installed {
 			success++
+			status[tool.Name] = true
 			fmt.Printf("  ✓ %s (already installed)\n", tool.Name)
+			continue
+		}
+
+		if dep := entities.FailedDependency(tool, status); dep != "" {
+			failed++
+			status[tool.Name] = false
+			fmt.Printf("  ⊘ %s (skipped: dependency %s failed)\n", tool.Name, dep)
 			continue
 		}
 
 		fmt.Printf("  → %s... ", tool.Name)
 		result, err := installer.Install(&tool)
-		if err != nil || !result.Success {
+		ok := err == nil && result.Success
+		status[tool.Name] = ok
+		if !ok {
 			failed++
 			fmt.Println("✗")
 			if result != nil && result.Message != "" {
