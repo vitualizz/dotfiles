@@ -1,3 +1,8 @@
+# ── vitualizz dotfiles ─────────────────────────────────────────────
+# Bloque sembrado por github.com/vitualizz/dotfiles. Desde ahora es tuyo:
+# edítalo, muévelo o bórralo; el instalador no lo vuelve a tocar.
+# Cada sección solo actúa si eso todavía no está configurado arriba.
+
 if [[ -z "$HOMEBREW_PREFIX" ]]; then
   for _brew in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
     if [[ -x "$_brew" ]]; then
@@ -64,3 +69,5 @@ fi
 if [[ -z "$ZSH_HIGHLIGHT_VERSION" && -r "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
   source "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
+
+# ── fin vitualizz dotfiles ─────────────────────────────────────────

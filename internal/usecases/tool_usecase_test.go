@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
-	"github.com/vitualizz/vitualizz-devstack/internal/usecases"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/interfaces"
+	"github.com/vitualizz/dotfiles/internal/usecases"
 )
 
 type mockInstaller struct {

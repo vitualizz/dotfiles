@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o vitualizz-devstack ./cmd/vitualizz-devstack/
+RUN CGO_ENABLED=0 GOOS=linux go build -o dotfiles ./cmd/dotfiles/
 
 FROM debian:bookworm-slim
 
@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY --from=builder /build/vitualizz-devstack /app/vitualizz-devstack
+COPY --from=builder /build/dotfiles /app/dotfiles
 
-RUN chmod +x /app/vitualizz-devstack
+RUN chmod +x /app/dotfiles
 
-CMD ["/app/vitualizz-devstack"]
+CMD ["/app/dotfiles"]

@@ -1,6 +1,6 @@
 package models
 
-import "github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
+import "github.com/vitualizz/dotfiles/internal/domain/entities"
 
 type ViewState int
 

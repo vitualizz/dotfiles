@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
+	"github.com/vitualizz/dotfiles/internal/domain/interfaces"
 )
 
 type Translation struct {
@@ -23,7 +23,6 @@ type Translation struct {
 	Terminal         string
 	Shell            string
 	Tools            string
-	Container        string
 	Languages        string
 	Utils            string
 	Search           string
@@ -94,47 +93,86 @@ func parseTranslation(data []byte) Translation {
 		value := strings.Trim(parts[1], ",\" \n")
 
 		switch key {
-		case "welcome": trans.Welcome = value
-		case "select_tools": trans.SelectTools = value
-		case "install": trans.Install = value
-		case "uninstall": trans.Uninstall = value
-		case "install_all": trans.InstallAll = value
-		case "uninstall_all": trans.UninstallAll = value
-		case "exit": trans.Exit = value
-		case "back": trans.Back = value
-		case "settings": trans.Settings = value
-		case "language": trans.Language = value
-		case "categories": trans.Categories = value
-		case "terminal": trans.Terminal = value
-		case "shell": trans.Shell = value
-		case "tools": trans.Tools = value
-		case "container": trans.Container = value
-		case "languages": trans.Languages = value
-		case "utils": trans.Utils = value
-		case "search": trans.Search = value
-		case "no_tools_found": trans.NoToolsFound = value
-		case "installing": trans.Installing = value
-		case "uninstalling": trans.Uninstalling = value
-		case "success": trans.Success = value
-		case "failed": trans.Failed = value
-		case "already_installed": trans.AlreadyInstalled = value
-		case "not_installed": trans.NotInstalled = value
-		case "press_enter": trans.PressEnter = value
-		case "confirm": trans.Confirm = value
-		case "cancel": trans.Cancel = value
-		case "progress": trans.Progress = value
-		case "completed": trans.Completed = value
-		case "skipped": trans.Skipped = value
-		case "error": trans.Error = value
-		case "required": trans.Required = value
-		case "optional": trans.Optional = value
-		case "select_category": trans.SelectCategory = value
-		case "select_action": trans.SelectAction = value
-		case "results": trans.Results = value
-		case "summary": trans.Summary = value
-		case "total": trans.Total = value
-		case "installed": trans.Installed = value
-		case "failed_count": trans.FailedCount = value
+		case "welcome":
+			trans.Welcome = value
+		case "select_tools":
+			trans.SelectTools = value
+		case "install":
+			trans.Install = value
+		case "uninstall":
+			trans.Uninstall = value
+		case "install_all":
+			trans.InstallAll = value
+		case "uninstall_all":
+			trans.UninstallAll = value
+		case "exit":
+			trans.Exit = value
+		case "back":
+			trans.Back = value
+		case "settings":
+			trans.Settings = value
+		case "language":
+			trans.Language = value
+		case "categories":
+			trans.Categories = value
+		case "terminal":
+			trans.Terminal = value
+		case "shell":
+			trans.Shell = value
+		case "tools":
+			trans.Tools = value
+		case "languages":
+			trans.Languages = value
+		case "utils":
+			trans.Utils = value
+		case "search":
+			trans.Search = value
+		case "no_tools_found":
+			trans.NoToolsFound = value
+		case "installing":
+			trans.Installing = value
+		case "uninstalling":
+			trans.Uninstalling = value
+		case "success":
+			trans.Success = value
+		case "failed":
+			trans.Failed = value
+		case "already_installed":
+			trans.AlreadyInstalled = value
+		case "not_installed":
+			trans.NotInstalled = value
+		case "press_enter":
+			trans.PressEnter = value
+		case "confirm":
+			trans.Confirm = value
+		case "cancel":
+			trans.Cancel = value
+		case "progress":
+			trans.Progress = value
+		case "completed":
+			trans.Completed = value
+		case "skipped":
+			trans.Skipped = value
+		case "error":
+			trans.Error = value
+		case "required":
+			trans.Required = value
+		case "optional":
+			trans.Optional = value
+		case "select_category":
+			trans.SelectCategory = value
+		case "select_action":
+			trans.SelectAction = value
+		case "results":
+			trans.Results = value
+		case "summary":
+			trans.Summary = value
+		case "total":
+			trans.Total = value
+		case "installed":
+			trans.Installed = value
+		case "failed_count":
+			trans.FailedCount = value
 		}
 	}
 	return trans
@@ -150,47 +188,86 @@ func (i *I18n) Get(key string, lang string) string {
 	}
 
 	switch key {
-	case "welcome": return trans.Welcome
-	case "select_tools": return trans.SelectTools
-	case "install": return trans.Install
-	case "uninstall": return trans.Uninstall
-	case "install_all": return trans.InstallAll
-	case "uninstall_all": return trans.UninstallAll
-	case "exit": return trans.Exit
-	case "back": return trans.Back
-	case "settings": return trans.Settings
-	case "language": return trans.Language
-	case "categories": return trans.Categories
-	case "terminal": return trans.Terminal
-	case "shell": return trans.Shell
-	case "tools": return trans.Tools
-	case "container": return trans.Container
-	case "languages": return trans.Languages
-	case "utils": return trans.Utils
-	case "search": return trans.Search
-	case "no_tools_found": return trans.NoToolsFound
-	case "installing": return trans.Installing
-	case "uninstalling": return trans.Uninstalling
-	case "success": return trans.Success
-	case "failed": return trans.Failed
-	case "already_installed": return trans.AlreadyInstalled
-	case "not_installed": return trans.NotInstalled
-	case "press_enter": return trans.PressEnter
-	case "confirm": return trans.Confirm
-	case "cancel": return trans.Cancel
-	case "progress": return trans.Progress
-	case "completed": return trans.Completed
-	case "skipped": return trans.Skipped
-	case "error": return trans.Error
-	case "required": return trans.Required
-	case "optional": return trans.Optional
-	case "select_category": return trans.SelectCategory
-	case "select_action": return trans.SelectAction
-	case "results": return trans.Results
-	case "summary": return trans.Summary
-	case "total": return trans.Total
-	case "installed": return trans.Installed
-	case "failed_count": return trans.FailedCount
+	case "welcome":
+		return trans.Welcome
+	case "select_tools":
+		return trans.SelectTools
+	case "install":
+		return trans.Install
+	case "uninstall":
+		return trans.Uninstall
+	case "install_all":
+		return trans.InstallAll
+	case "uninstall_all":
+		return trans.UninstallAll
+	case "exit":
+		return trans.Exit
+	case "back":
+		return trans.Back
+	case "settings":
+		return trans.Settings
+	case "language":
+		return trans.Language
+	case "categories":
+		return trans.Categories
+	case "terminal":
+		return trans.Terminal
+	case "shell":
+		return trans.Shell
+	case "tools":
+		return trans.Tools
+	case "languages":
+		return trans.Languages
+	case "utils":
+		return trans.Utils
+	case "search":
+		return trans.Search
+	case "no_tools_found":
+		return trans.NoToolsFound
+	case "installing":
+		return trans.Installing
+	case "uninstalling":
+		return trans.Uninstalling
+	case "success":
+		return trans.Success
+	case "failed":
+		return trans.Failed
+	case "already_installed":
+		return trans.AlreadyInstalled
+	case "not_installed":
+		return trans.NotInstalled
+	case "press_enter":
+		return trans.PressEnter
+	case "confirm":
+		return trans.Confirm
+	case "cancel":
+		return trans.Cancel
+	case "progress":
+		return trans.Progress
+	case "completed":
+		return trans.Completed
+	case "skipped":
+		return trans.Skipped
+	case "error":
+		return trans.Error
+	case "required":
+		return trans.Required
+	case "optional":
+		return trans.Optional
+	case "select_category":
+		return trans.SelectCategory
+	case "select_action":
+		return trans.SelectAction
+	case "results":
+		return trans.Results
+	case "summary":
+		return trans.Summary
+	case "total":
+		return trans.Total
+	case "installed":
+		return trans.Installed
+	case "failed_count":
+		return trans.FailedCount
 	}
 	return key
 }
@@ -220,7 +297,7 @@ func (i *I18n) T(key string) string {
 var _ interfaces.I18nPort = (*I18n)(nil)
 
 type I18nSimple struct {
-	lang string
+	lang         string
 	translations map[string]map[string]string
 }
 
@@ -243,7 +320,6 @@ func NewI18nSimple() *I18nSimple {
 				"terminal":          "Terminal",
 				"shell":             "Shell",
 				"tools":             "Herramientas",
-				"container":         "Contenedores",
 				"languages":         "Lenguajes",
 				"utils":             "Utilidades",
 				"search":            "Buscar",
@@ -288,7 +364,6 @@ func NewI18nSimple() *I18nSimple {
 				"terminal":          "Terminal",
 				"shell":             "Shell",
 				"tools":             "Tools",
-				"container":         "Containers",
 				"languages":         "Languages",
 				"utils":             "Utilities",
 				"search":            "Search",

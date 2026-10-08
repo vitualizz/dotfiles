@@ -8,12 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/config"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/installers"
+	"github.com/vitualizz/dotfiles/internal/config"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/installers"
 )
 
-const shippedToolsYAML = "../../cmd/vitualizz-devstack/config/tools.yaml"
+const shippedToolsYAML = "../../cmd/dotfiles/config/tools.yaml"
 
 var linuxOnly = regexp.MustCompile(`\b(sudo|apt-get|apt|dpkg|pacman|yay|dnf|zypper|apk|fc-cache)\b|_linux|Linux_|linux-`)
 
@@ -68,7 +68,7 @@ func TestShippedTools_LinuxNeverResolvesMacOSCommands(t *testing.T) {
 	}
 }
 
-func TestShippedTools_ConfigIsComposedNotReplaced(t *testing.T) {
+func TestShippedTools_SeedsConfigWithoutOverwriting(t *testing.T) {
 	configDir, err := filepath.Abs(filepath.Dir(shippedToolsYAML))
 	if err != nil {
 		t.Fatal(err)
@@ -81,41 +81,38 @@ func TestShippedTools_ConfigIsComposedNotReplaced(t *testing.T) {
 	cases := []struct {
 		tool   string
 		file   string
-		marker string
+		append bool
 	}{
-		{"zsh-config", ".zshrc", "# vitualizz-devstack"},
-		{"kitty-config", ".config/kitty/kitty.conf", "include vitualizz/kitty.conf"},
+		{"zsh-config", ".zshrc", true},
+		{"kitty-config", ".config/kitty/kitty.conf", false},
+		{"starship-config", ".config/starship.toml", false},
 	}
 
 	for _, tc := range cases {
-		for _, symlinked := range []bool{false, true} {
-			t.Run(fmt.Sprintf("%s/symlink=%v", tc.tool, symlinked), func(t *testing.T) {
+		for _, existing := range []string{"none", "file", "symlink"} {
+			t.Run(fmt.Sprintf("%s/%s", tc.tool, existing), func(t *testing.T) {
 				home := t.TempDir()
 				t.Setenv("HOME", home)
-
 				target := filepath.Join(home, tc.file)
-				if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-					t.Fatal(err)
-				}
 				original := "user setting 1\nuser setting 2\n"
-				realFile := target
-				if symlinked {
-					realFile = filepath.Join(home, "dotfiles", filepath.Base(tc.file))
-					if err := os.MkdirAll(filepath.Dir(realFile), 0o755); err != nil {
+
+				switch existing {
+				case "file":
+					writeFile(t, target, original)
+				case "symlink":
+					real := filepath.Join(home, "dotfiles", filepath.Base(tc.file))
+					writeFile(t, real, original)
+					if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 						t.Fatal(err)
 					}
-					if err := os.Symlink(realFile, target); err != nil {
+					if err := os.Symlink(real, target); err != nil {
 						t.Fatal(err)
 					}
-				}
-				if err := os.WriteFile(realFile, []byte(original), 0o644); err != nil {
-					t.Fatal(err)
 				}
 
 				tool := repo.GetByID(tc.tool)
 				inst := installers.NewToolInstaller()
 				inst.SetConfigDir(configDir)
-
 				for i := 0; i < 2; i++ {
 					if res, err := inst.Install(tool); err != nil {
 						t.Fatalf("install #%d: %v (%s)", i+1, err, res.Message)
@@ -126,24 +123,41 @@ func TestShippedTools_ConfigIsComposedNotReplaced(t *testing.T) {
 				}
 
 				got := readFile(t, target)
-				if !strings.Contains(got, original) {
-					t.Errorf("user config lost after install:\n%s", got)
+				switch {
+				case existing == "none" && got == "":
+					t.Error("config was not seeded")
+				case existing != "none" && !tc.append && got != original:
+					t.Errorf("existing config was modified:\n%s", got)
+				case existing != "none" && tc.append && !strings.HasPrefix(got, original):
+					t.Errorf("existing config lost:\n%s", got)
 				}
-				if n := strings.Count(got, tc.marker); n != 1 {
-					t.Errorf("marker appears %d times after installing twice, want 1:\n%s", n, got)
+				if tc.append {
+					if n := strings.Count(got, "# ── vitualizz dotfiles"); n != 1 {
+						t.Errorf("block appears %d times after installing twice, want 1", n)
+					}
+				}
+				if fi, err := os.Lstat(target); err != nil || (fi.Mode()&os.ModeSymlink != 0) != (existing == "symlink") {
+					t.Error("symlink state changed")
 				}
 
-				if res, err := inst.Uninstall(tool); err != nil {
-					t.Fatalf("uninstall: %v (%s)", err, res.Message)
+				if _, err := inst.Uninstall(tool); err != nil {
+					t.Fatalf("uninstall: %v", err)
 				}
-				if got := readFile(t, target); got != original {
-					t.Errorf("uninstall did not restore the original file:\ngot:  %q\nwant: %q", got, original)
-				}
-				if fi, err := os.Lstat(target); err != nil || (fi.Mode()&os.ModeSymlink != 0) != symlinked {
-					t.Errorf("symlink state changed (symlinked=%v)", symlinked)
+				if after := readFile(t, target); after != got {
+					t.Error("uninstall modified a config that belongs to the user")
 				}
 			})
 		}
+	}
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/executor"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/executor"
 )
 
 func TestExecuteWithOutput_Success(t *testing.T) {

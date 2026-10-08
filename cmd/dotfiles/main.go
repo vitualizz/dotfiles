@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,22 +12,16 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/config"
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/installers"
-	"github.com/vitualizz/vitualizz-devstack/internal/infrastructure/logger"
-	"github.com/vitualizz/vitualizz-devstack/internal/ui/components"
-	"github.com/vitualizz/vitualizz-devstack/i18n/locales"
+	"github.com/vitualizz/dotfiles/internal/config"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/installers"
+	"github.com/vitualizz/dotfiles/internal/infrastructure/logger"
+	"github.com/vitualizz/dotfiles/internal/ui/components"
+	"github.com/vitualizz/dotfiles/i18n/locales"
 )
 
-//go:embed config/tools.yaml
-var embeddedToolsYAML []byte
-
-//go:embed all:config/kitty/*
-var embeddedKitty embed.FS
-
-//go:embed all:config/zsh/*
-var embeddedZsh embed.FS
+//go:embed all:config
+var embeddedConfig embed.FS
 
 func main() {
 	ciMode := false
@@ -65,7 +60,7 @@ func main() {
 	var configPath string
 	var configDir string
 
-	if envPath := os.Getenv("DEVSTACK_CONFIG"); envPath != "" {
+	if envPath := os.Getenv("DOTFILES_CONFIG"); envPath != "" {
 		configPath = envPath
 		configDir = filepath.Dir(envPath)
 	} else {
@@ -111,7 +106,7 @@ func main() {
 func preflight(distro entities.Distro) error {
 	if os.Geteuid() == 0 && (distro.IsMacOS() || os.Getenv("SUDO_USER") != "") {
 		return errors.New("do not run with sudo: config would be installed for root instead of your user. " +
-			"Re-run without sudo; DevStack asks for your password when a tool needs it")
+			"Re-run without sudo; Dotfiles asks for your password when a tool needs it")
 	}
 	if !distro.IsMacOS() {
 		return nil
@@ -129,71 +124,26 @@ func preflight(distro entities.Distro) error {
 }
 
 func extractEmbeddedConfig() (string, error) {
-	tmpDir, err := os.MkdirTemp("", "devstack-config-*")
+	tmpDir, err := os.MkdirTemp("", "dotfiles-config-*")
 	if err != nil {
 		return "", err
 	}
-
-	if err := os.WriteFile(filepath.Join(tmpDir, "tools.yaml"), embeddedToolsYAML, 0o644); err != nil {
-		return "", err
-	}
-
-	kittyDir := filepath.Join(tmpDir, "kitty")
-	if err := os.MkdirAll(kittyDir, 0o755); err != nil {
-		return "", err
-	}
-
-	kittyFiles, err := embeddedKitty.ReadDir("config/kitty")
+	root, err := fs.Sub(embeddedConfig, "config")
 	if err != nil {
 		return "", err
 	}
-	for _, f := range kittyFiles {
-		if f.IsDir() {
-			continue
-		}
-		data, err := embeddedKitty.ReadFile(filepath.Join("config", "kitty", f.Name()))
-		if err != nil {
-			return "", err
-		}
-		if err := os.WriteFile(filepath.Join(kittyDir, f.Name()), data, 0o644); err != nil {
-			return "", err
-		}
-	}
-
-	zshDir := filepath.Join(tmpDir, "zsh")
-	if err := os.MkdirAll(zshDir, 0o755); err != nil {
-		return "", err
-	}
-
-	zshFiles, err := embeddedZsh.ReadDir("config/zsh")
-	if err != nil {
-		return "", err
-	}
-	for _, f := range zshFiles {
-		if f.IsDir() {
-			continue
-		}
-		data, err := embeddedZsh.ReadFile(filepath.Join("config", "zsh", f.Name()))
-		if err != nil {
-			return "", err
-		}
-		if err := os.WriteFile(filepath.Join(zshDir, f.Name()), data, 0o644); err != nil {
-			return "", err
-		}
-	}
-
-	return tmpDir, nil
+	return tmpDir, os.CopyFS(tmpDir, root)
 }
 
 func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inDocker bool, log *logger.InstallLogger) {
 	fmt.Println("┌─────────────────────────────────────────────┐")
-	fmt.Println("│  Vitualizz DevStack — CI Mode               │")
+	fmt.Println("│  Vitualizz Dotfiles — CI Mode               │")
 	fmt.Println("└─────────────────────────────────────────────┘")
 	fmt.Println()
 
 	if inDocker {
 		fmt.Println("  🐳 Docker environment detected")
-		fmt.Println("  Skipping display tools (kitty, docker, etc.)")
+		fmt.Println("  Skipping display tools (kitty)")
 		fmt.Println()
 	}
 

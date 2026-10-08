@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
+	"github.com/vitualizz/dotfiles/internal/domain/entities"
 )
 
 func TestGetInstallCmd(t *testing.T) {
@@ -264,7 +264,6 @@ func TestCategoryIsValid(t *testing.T) {
 		{entities.CategoryShell, true},
 		{entities.CategoryEditor, true},
 		{entities.CategoryTools, true},
-		{entities.CategoryContainer, true},
 		{entities.CategoryFonts, true},
 		{entities.Category("theme"), false},
 		{entities.Category("unknown"), false},
