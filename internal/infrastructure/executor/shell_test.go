@@ -105,3 +105,33 @@ func TestExecute_OutputContainsTime(t *testing.T) {
 		t.Errorf("Execute() output = %q, want to contain timing [Xms]", out)
 	}
 }
+
+func TestExecuteWithOutput_ExportsNonInteractive(t *testing.T) {
+	e := executor.NewShellExecutor()
+	out, err := e.ExecuteWithOutput("echo $NONINTERACTIVE")
+	if err != nil {
+		t.Fatalf("ExecuteWithOutput() error = %v", err)
+	}
+	if strings.TrimSpace(out) != "1" {
+		t.Errorf("NONINTERACTIVE = %q, want %q", strings.TrimSpace(out), "1")
+	}
+}
+
+func TestExecuteWithOutput_PathIncludesHomebrew(t *testing.T) {
+	e := executor.NewShellExecutor()
+	out, err := e.ExecuteWithOutput("echo $PATH")
+	if err != nil {
+		t.Fatalf("ExecuteWithOutput() error = %v", err)
+	}
+	if !strings.Contains(out, "/opt/homebrew/bin") {
+		t.Errorf("PATH = %q, want to contain /opt/homebrew/bin", out)
+	}
+}
+
+func TestExecuteWithOutput_DetachedHasNoControllingTTY(t *testing.T) {
+	e := executor.NewShellExecutor()
+	e.Detached = true
+	if _, err := e.ExecuteWithOutput("exec 3</dev/tty"); err == nil {
+		t.Error("detached command could open /dev/tty, want failure")
+	}
+}

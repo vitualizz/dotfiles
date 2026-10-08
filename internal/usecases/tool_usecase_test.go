@@ -9,8 +9,6 @@ import (
 	"github.com/vitualizz/vitualizz-devstack/internal/usecases"
 )
 
-// --- mockInstaller ---
-
 type mockInstaller struct {
 	installed map[string]bool
 	failOn    map[string]error
@@ -45,8 +43,6 @@ func (m *mockInstaller) IsInstalled(tool *entities.Tool) (bool, error) {
 
 var _ interfaces.InstallerPort = (*mockInstaller)(nil)
 
-// --- mockRepo ---
-
 type mockRepo struct {
 	tools []entities.Tool
 }
@@ -70,8 +66,6 @@ func (r *mockRepo) GetByID(name string) *entities.Tool {
 }
 
 var _ interfaces.ToolRepository = (*mockRepo)(nil)
-
-// --- InstallToolUseCase ---
 
 func TestInstallToolUseCase_AlreadyInstalled(t *testing.T) {
 	installer := newMockInstaller()
@@ -120,8 +114,6 @@ func TestInstallToolUseCase_InstallFails(t *testing.T) {
 	}
 }
 
-// --- UninstallToolUseCase ---
-
 func TestUninstallToolUseCase_NotInstalled(t *testing.T) {
 	installer := newMockInstaller()
 	uc := usecases.NewUninstallToolUseCase(installer, &mockRepo{})
@@ -159,8 +151,6 @@ func TestUninstallToolUseCase_Installed(t *testing.T) {
 	}
 }
 
-// --- BatchCheckStatusUseCase ---
-
 func TestBatchCheckStatusUseCase(t *testing.T) {
 	installer := newMockInstaller()
 	installer.installed["git"] = true
@@ -185,8 +175,6 @@ func TestBatchCheckStatusUseCase(t *testing.T) {
 		t.Error("missing should not be installed")
 	}
 }
-
-// --- BatchInstallUseCase ---
 
 func TestBatchInstallUseCase_InstallsDependenciesFirst(t *testing.T) {
 	installer := newMockInstaller()

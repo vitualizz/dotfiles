@@ -4,16 +4,22 @@
 [![Go](https://img.shields.io/badge/Go-1.24-blue?logo=go)](https://go.dev)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Interactive TUI that installs and configures a complete terminal-first development environment on Linux — Kitty, zsh, Neovim, and 40+ hand-picked tools in one go.
+Interactive TUI that installs and configures a complete terminal-first development environment on Linux and macOS — Kitty, zsh, Neovim, and 40+ hand-picked tools in one go.
 
-> **Platform:** Linux only. macOS, Windows, and BSD are **not supported**. This is a Linux-native DevStack — it relies on distro package managers (pacman, apt, apk, dnf) and Linux-specific tooling.
+> **Platform:** Linux (pacman, apt, apk, dnf) and macOS (Homebrew). Windows and BSD are **not supported**.
 
 ## Quick Start
 
-One command, no dependencies needed:
+**Linux** — one command, no dependencies needed:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | sudo bash
+```
+
+**macOS** — requires [Homebrew](https://brew.sh). Do **not** use `sudo` (Homebrew refuses to run as root):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vitualizz/vitualizz-devstack/master/install.sh | bash
 ```
 
 The installer downloads a pre-compiled binary from the latest GitHub release. No Go, no Docker, no compilation — just runs.
@@ -44,7 +50,10 @@ A **DevStack** — not a dotfiles repo, not a collection of scripts. It's an opi
 Language select → Theme select → Tool select → Install
 ```
 
-Each tool declares install commands per distro. The installer detects your distro at runtime and picks the right command, with a fallback chain: `exact distro → all → detection order → fallback`.
+Each tool declares install commands per platform. The installer detects your platform at runtime and picks the right command:
+
+- **Linux:** `exact distro → all → other distros → fallback`
+- **macOS:** `macos → brew → all → fallback` — Linux commands (apt, pacman, sudo…) are never used
 
 ```yaml
 # config/tools.yaml
@@ -53,15 +62,18 @@ Each tool declares install commands per distro. The installer detects your distr
     arch: pacman -S ripgrep
     debian: apt-get install -y ripgrep
     alpine: apk add ripgrep
+    brew: brew install ripgrep    # macOS (and Linuxbrew)
     all: cargo install ripgrep   # universal fallback
 ```
+
+Casks and other macOS-only commands go under `macos:` (casks don't exist on Linux). A test (`internal/config/tools_yaml_test.go`) fails if any tool resolves to a Linux-only command on macOS, or to a macOS command on Linux.
 
 ## Stack
 
 | Category | Tools |
 |----------|-------|
 | **Terminal** | Kitty (+ Vitualizz color theme) |
-| **Shell** | zsh, Oh My Zsh, Starship, Powerlevel10k, autosuggestions, syntax-highlighting, atuin |
+| **Shell** | zsh, Starship, autosuggestions, syntax-highlighting, atuin |
 | **Editor** | Neovim |
 | **AI** | opencode |
 | **Version managers** | mise, rustup, uv |
@@ -76,16 +88,37 @@ Each tool declares install commands per distro. The installer detects your distr
 | **Fonts** | Hack, JetBrains Mono, Fira Code (Nerd Fonts) |
 | **Theme** | Vitualizz |
 
-## Supported Distros
+## Supported Platforms
 
 - **Arch Linux** (pacman)
 - **Debian / Ubuntu** (apt)
 - **Alpine** (apk)
 - **Fedora** (dnf)
+- **macOS** on Apple Silicon or Intel (Homebrew)
 
 Other distros may work if tools fall back to the `all` (cargo/universal) install path, but are not officially tested.
 
-## Architecture
+### macOS notes
+
+- **Prerequisites:** [Homebrew](https://brew.sh) (it also installs the Xcode Command Line Tools). The installer stops early with instructions if it is missing.
+- **Docker** installs Docker Desktop (`brew install --cask docker-desktop`); `docker compose` comes bundled. Open Docker.app once after installing. If the cask needs your password, the TUI reports it instead of hanging — run `brew install --cask docker-desktop` in a terminal, or use `--ci` mode, which can prompt.
+- **Fonts** are installed as Homebrew casks into `~/Library/Fonts`.
+
+
+## Your existing config is preserved
+
+DevStack never replaces your dotfiles. It ships its config as separate files and adds a single marked line to yours:
+
+| File | Line added | DevStack config |
+|------|-----------|-----------------|
+| `~/.zshrc` | `source ~/.config/vitualizz-devstack/zshrc  # vitualizz-devstack` (appended) | `~/.config/vitualizz-devstack/zshrc` |
+| `~/.config/kitty/kitty.conf` | `include vitualizz/kitty.conf` (first line) | `~/.config/kitty/vitualizz/` |
+
+- **Your settings win.** The zsh config only sets what is still unset (Homebrew, history, aliases, prompt, plugins, `PATH` entries); kitty's include goes first, so your options override it.
+- **Re-running is safe**: the line is added once. **Uninstalling** removes only that line and DevStack's files, leaving your file exactly as it was.
+- Symlinked dotfiles (stow, chezmoi…) stay symlinks. A one-time backup (`<file>.bak-<timestamp>`) is still made before the first change.
+
+
 
 Hexagonal (Ports & Adapters) — UI and infrastructure never import each other, only through interfaces.
 
@@ -114,7 +147,7 @@ i18n/             ← en/es translations
 
 ### Prerequisites
 
-- Go 1.24+
+- Go 1.24+ (macOS: `brew install go`)
 - Docker & Docker Compose (optional, for isolated testing)
 - Vagrant + VirtualBox/libvirt (optional, for multi-distro testing)
 

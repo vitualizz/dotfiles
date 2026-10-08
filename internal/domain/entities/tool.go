@@ -3,11 +3,11 @@ package entities
 import (
 	"os"
 	"os/exec"
+	"runtime"
 	"slices"
 	"strings"
 )
 
-// DockerTools lists tool names that don't make sense inside a Docker container.
 var DockerTools = map[string]bool{
 	"kitty":          true,
 	"kitty-config":   true,
@@ -17,14 +17,11 @@ var DockerTools = map[string]bool{
 	"docker-filemanager": true,
 }
 
-// IsDocker returns true if the process is running inside a Docker container.
 func IsDocker() bool {
-	// Check for .dockerenv (standard Docker marker)
 	if _, err := os.Stat("/.dockerenv"); err == nil {
 		return true
 	}
 
-	// Check cgroup (works on some container runtimes)
 	if data, err := os.ReadFile("/proc/1/cgroup"); err == nil {
 		content := strings.ToLower(string(data))
 		if strings.Contains(content, "docker") || strings.Contains(content, "containerd") || strings.Contains(content, "lxc") {
@@ -32,17 +29,12 @@ func IsDocker() bool {
 		}
 	}
 
-	// Check for container environment variable
 	if os.Getenv("container") != "" {
 		return true
 	}
 
 	return false
 }
-
-// =============================================================================
-// Category
-// =============================================================================
 
 type Category string
 
@@ -56,7 +48,6 @@ const (
 	CategoryTheme  Category = "theme"
 )
 
-// AllCategories returns all tool categories in display order.
 func AllCategories() []Category {
 	return []Category{
 		CategoryTerminal,
@@ -70,16 +61,10 @@ func AllCategories() []Category {
 
 func (c Category) String() string { return string(c) }
 
-// IsValid checks if the category is a known tool category.
 func (c Category) IsValid() bool {
 	return slices.Contains(AllCategories(), c)
 }
 
-// =============================================================================
-// Distro
-// =============================================================================
-
-// Distro represents a supported Linux distribution.
 type Distro string
 
 const (
@@ -89,16 +74,40 @@ const (
 	DistroSuse     Distro = "suse"
 	DistroAlpine   Distro = "alpine"
 	DistroBrew     Distro = "brew"
+	DistroMacOS    Distro = "macos"
 	DistroAll      Distro = "all"
 	DistroFallback Distro = "fallback"
 )
 
-// DistroDetectionOrder is the order in which distros are checked for fallbacks.
 var DistroDetectionOrder = []Distro{DistroArch, DistroDebian, DistroFedora, DistroSuse, DistroAlpine, DistroBrew, DistroFallback}
 
-// releaseFileFor returns the distro-specific release file path used as secondary
-// verification when /etc/os-release is unavailable. Returns empty string for
-// distros without a canonical release file (e.g. brew).
+var MacOSCommandOrder = []Distro{DistroMacOS, DistroBrew, DistroAll, DistroFallback}
+
+func (d Distro) IsMacOS() bool { return d == DistroMacOS }
+
+func commandOrder(distro Distro) []Distro {
+	if distro.IsMacOS() {
+		return MacOSCommandOrder
+	}
+	order := make([]Distro, 0, len(DistroDetectionOrder)+2)
+	order = append(order, distro, DistroAll)
+	for _, d := range DistroDetectionOrder {
+		if d != distro && d != DistroBrew {
+			order = append(order, d)
+		}
+	}
+	return order
+}
+
+func resolveCommand(cmds map[Distro]string, distro Distro) string {
+	for _, d := range commandOrder(distro) {
+		if cmd := cmds[d]; cmd != "" {
+			return cmd
+		}
+	}
+	return ""
+}
+
 func releaseFileFor(distro Distro) string {
 	switch distro {
 	case DistroArch:
@@ -115,8 +124,11 @@ func releaseFileFor(distro Distro) string {
 	return ""
 }
 
-// DetectDistro detects the current Linux distribution.
 func DetectDistro() Distro {
+	if runtime.GOOS == "darwin" {
+		return DistroMacOS
+	}
+
 	data, err := os.ReadFile("/etc/os-release")
 	if err == nil {
 		lower := strings.ToLower(string(data))
@@ -135,10 +147,6 @@ func DetectDistro() Distro {
 		}
 	}
 
-	// Package manager fallbacks with secondary verification.
-	// When /etc/os-release is unavailable we check for the package manager
-	// binary AND a distro-specific release file to avoid false positives
-	// (e.g. pacman installed on a Debian system).
 	cmds := []struct {
 		distro Distro
 		check  string
@@ -152,13 +160,10 @@ func DetectDistro() Distro {
 	}
 	for _, c := range cmds {
 		if _, err := exec.LookPath(c.check); err == nil {
-			// Distros without a canonical release file (brew) pass through.
 			if releaseFile := releaseFileFor(c.distro); releaseFile != "" {
 				if _, err := os.Stat(releaseFile); err == nil {
 					return c.distro
 				}
-				// Package manager exists but release file missing — continue
-				// checking; this avoids false positives from cross-installed tools.
 				continue
 			}
 			return c.distro
@@ -167,10 +172,6 @@ func DetectDistro() Distro {
 
 	return ""
 }
-
-// =============================================================================
-// Theme
-// =============================================================================
 
 type Theme struct {
 	Name        string      `json:"name" yaml:"name"`
@@ -197,75 +198,33 @@ type ThemeColorSet struct {
 	White   string `json:"white" yaml:"white"`
 }
 
-// =============================================================================
-// Tool
-// =============================================================================
-
-// Tool represents a single tool or tool bundle.
 type Tool struct {
-	// Core identity
 	Name        string   `json:"name" yaml:"name"`
 	Category   Category `json:"category" yaml:"category"`
 	Description string  `json:"description" yaml:"description"`
 
-	// Installation commands per distro
 	Install   map[Distro]string `json:"install" yaml:"install"`
 	Uninstall map[Distro]string `json:"uninstall" yaml:"uninstall"`
 	Check     string           `json:"check" yaml:"check"`
 
-	// Dependencies (tools that must be installed first)
 	DependsOn []string `json:"depends_on" yaml:"depends_on"`
 
-	// Metadata
 	SourceURL    string   `json:"source_url" yaml:"source_url"`
 	Version     string   `json:"version" yaml:"version"`
 	Alternatives []string `json:"alternatives" yaml:"alternatives"`
 
-	// UI state
 	Enabled bool `json:"enabled" yaml:"enabled"`
 	Required bool `json:"required" yaml:"required"`
 }
 
-// GetInstallCmd returns the install command for the given distro.
-// Tries: exact match → "all" → other distros in detection order.
 func (t *Tool) GetInstallCmd(distro Distro) string {
-	if cmd, ok := t.Install[distro]; ok && cmd != "" {
-		return cmd
-	}
-	if cmd, ok := t.Install[DistroAll]; ok && cmd != "" {
-		return cmd
-	}
-	for _, d := range DistroDetectionOrder {
-		if d == distro {
-			continue
-		}
-		if cmd, ok := t.Install[d]; ok && cmd != "" {
-			return cmd
-		}
-	}
-	return ""
+	return resolveCommand(t.Install, distro)
 }
 
-// GetUninstallCmd returns the uninstall command for the given distro.
 func (t *Tool) GetUninstallCmd(distro Distro) string {
-	if cmd, ok := t.Uninstall[distro]; ok && cmd != "" {
-		return cmd
-	}
-	if cmd, ok := t.Uninstall[DistroAll]; ok && cmd != "" {
-		return cmd
-	}
-	for _, d := range DistroDetectionOrder {
-		if d == distro {
-			continue
-		}
-		if cmd, ok := t.Uninstall[d]; ok && cmd != "" {
-			return cmd
-		}
-	}
-	return ""
+	return resolveCommand(t.Uninstall, distro)
 }
 
-// HasInstallCommand returns true if the tool has any install command defined.
 func (t *Tool) HasInstallCommand() bool {
 	for _, cmd := range t.Install {
 		if cmd != "" {
@@ -275,7 +234,6 @@ func (t *Tool) HasInstallCommand() bool {
 	return false
 }
 
-// HasUninstallCommand returns true if the tool has any uninstall command defined.
 func (t *Tool) HasUninstallCommand() bool {
 	for _, cmd := range t.Uninstall {
 		if cmd != "" {
@@ -285,18 +243,14 @@ func (t *Tool) HasUninstallCommand() bool {
 	return false
 }
 
-// IsBundle returns true if this tool is a bundle (group container).
-// Bundles have empty install commands and no dependencies.
 func (t *Tool) IsBundle() bool {
 	return !t.HasInstallCommand() && len(t.DependsOn) == 0
 }
 
-// IsDockerIncompatible returns true if this tool shouldn't be installed in Docker.
 func (t *Tool) IsDockerIncompatible() bool {
 	return DockerTools[t.Name]
 }
 
-// FilterDockerIncompatible removes tools that don't work inside Docker.
 func FilterDockerIncompatible(tools []Tool) []Tool {
 	if !IsDocker() {
 		return tools
@@ -310,10 +264,6 @@ func FilterDockerIncompatible(tools []Tool) []Tool {
 	return filtered
 }
 
-// =============================================================================
-// InstallResult
-// =============================================================================
-
 type InstallResult struct {
 	ToolName   string `json:"tool_name"`
 	Success   bool   `json:"success"`
@@ -321,10 +271,6 @@ type InstallResult struct {
 	DurationMs int64  `json:"duration_ms"`
 	Distro    Distro `json:"distro,omitempty"`
 }
-
-// =============================================================================
-// Interfaces
-// =============================================================================
 
 type Installer interface {
 	Install(tool *Tool) (*InstallResult, error)

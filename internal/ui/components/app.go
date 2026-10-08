@@ -18,7 +18,7 @@ type App struct {
 	batchInstall *usecases.BatchInstallUseCase
 	i18n         *locales.I18nSimple
 	renderer     *views.Renderer
-	inDocker     bool // true when running inside a Docker container
+	inDocker     bool
 }
 
 func NewApp(repo interfaces.ToolRepository, installer interfaces.InstallerPort, i18n *locales.I18nSimple, logPath string) *App {
@@ -100,10 +100,6 @@ func (a *App) handleKey(key string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// =============================================================================
-// Thanks (post-install/uninstall)
-// =============================================================================
-
 func (a *App) handleThanks(key string) (tea.Model, tea.Cmd) {
 	switch key {
 	case "l":
@@ -113,10 +109,6 @@ func (a *App) handleThanks(key string) (tea.Model, tea.Cmd) {
 	}
 	return a, nil
 }
-
-// =============================================================================
-// Language Select
-// =============================================================================
 
 func (a *App) handleLanguageSelect(key string) (tea.Model, tea.Cmd) {
 	switch key {
@@ -141,10 +133,6 @@ func (a *App) handleLanguageSelect(key string) (tea.Model, tea.Cmd) {
 	}
 	return a, nil
 }
-
-// =============================================================================
-// Theme Select
-// =============================================================================
 
 func (a *App) handleThemeSelect(key string) (tea.Model, tea.Cmd) {
 	themes := a.repo.GetThemes()
@@ -172,10 +160,6 @@ func (a *App) handleThemeSelect(key string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// =============================================================================
-// Main Menu
-// =============================================================================
-
 func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 	switch key {
 	case "up":
@@ -188,9 +172,8 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 		}
 	case "enter":
 		switch a.model.MainMenuChoice {
-		case 0: // Install All
+		case 0:
 			allTools := a.repo.GetAll()
-			// Filter out Docker-incompatible tools when running in container
 			if a.inDocker {
 				allTools = entities.FilterDockerIncompatible(allTools)
 			}
@@ -198,12 +181,11 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 			a.model.StartProgress(ordered)
 			a.model.IsLoading = true
 			return a, a.installNext()
-		case 1: // Uninstall All
+		case 1:
 			installed := a.getInstalledTools()
 			if len(installed) == 0 {
-				// Nothing to uninstall, show a quick thanks
 				a.model.StartUninstallProgress(nil)
-				a.model.ProgressIdx = 0 // already done
+				a.model.ProgressIdx = 0
 				a.model.ViewState = models.StateThanks
 				a.model.IsLoading = false
 				return a, nil
@@ -211,20 +193,16 @@ func (a *App) handleMainMenu(key string) (tea.Model, tea.Cmd) {
 			a.model.StartUninstallProgress(installed)
 			a.model.IsLoading = true
 			return a, a.uninstallNext()
-		case 2: // Settings
+		case 2:
 			a.model.ViewState = models.StateSettings
-		case 3: // About
+		case 3:
 			a.model.ViewState = models.StateAbout
-		case 4: // Exit
+		case 4:
 			return a, tea.Quit
 		}
 	}
 	return a, nil
 }
-
-// =============================================================================
-// Progress (install)
-// =============================================================================
 
 func (a *App) installNext() tea.Cmd {
 	tool := a.model.GetCurrentProgressTool()
@@ -242,10 +220,6 @@ func (a *App) installNext() tea.Cmd {
 	}
 }
 
-// =============================================================================
-// Progress (uninstall)
-// =============================================================================
-
 func (a *App) uninstallNext() tea.Cmd {
 	tool := a.model.GetCurrentProgressTool()
 	toolPtr := &tool
@@ -261,10 +235,6 @@ func (a *App) uninstallNext() tea.Cmd {
 		return progressUpdateMsg{tool: tool, success: result.Success, message: result.Message}
 	}
 }
-
-// =============================================================================
-// Settings
-// =============================================================================
 
 func (a *App) handleSettings(key string) (tea.Model, tea.Cmd) {
 	switch key {
@@ -298,10 +268,6 @@ func (a *App) handleSettings(key string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// =============================================================================
-// Helpers
-// =============================================================================
-
 func (a *App) getInstalledTools() []entities.Tool {
 	allTools := a.repo.GetAll()
 	if a.inDocker {
@@ -320,17 +286,9 @@ func (a *App) getInstalledTools() []entities.Tool {
 	return installed
 }
 
-// =============================================================================
-// View — delegates to Renderer
-// =============================================================================
-
 func (a *App) View() string {
 	return a.renderer.View()
 }
-
-// =============================================================================
-// Messages
-// =============================================================================
 
 type progressUpdateMsg struct {
 	tool    entities.Tool

@@ -1,10 +1,3 @@
-# =============================================================================
-# EnvSetup Tools Configuration
-# =============================================================================
-# Distro detection order: arch > debian > fedora > suse > alpine > brew
-# Install commands per distro are executed in order until one succeeds
-# =============================================================================
-
 themes:
   - name: vitualizz
     display_name: "Vitualizz"
@@ -31,36 +24,16 @@ themes:
         cyan: "0x7DCFFF"
         white: "0xC0CAF5"
 
-
-# =============================================================================
-# Tools Definition
-# =============================================================================
-# Fields:
-#   - name: unique identifier
-#   - category: terminal | shell | editor | tools | container | fonts
-#   - depends_on: list of tools that must be installed first (order matters)
-#   - install: map of distro -> install command (executed in order until success)
-#   - uninstall: map of distro -> uninstall command (optional)
-#   - check: command to verify installation
-#   - version: optional version constraint (not enforced, for display)
-#   - description: human-readable description
-#   - source_url: reference link
-#   - alternatives: list of alternative names (e.g., nvim, vim)
-#   - enabled: shown in UI by default
-#   - required: must be installed (no option to disable)
-# =============================================================================
-
 tools:
-  # =====================================================================
-  # TERMINAL
-  # =====================================================================
   - name: kitty
     category: terminal
     install:
       all: |
         curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
         ln -sf ~/.local/kitty.app/bin/kitty ~/.local/bin/kitty
+      macos: brew install --cask kitty
     uninstall:
+      macos: brew uninstall --cask kitty
       arch: sudo pacman -R --noconfirm kitty
       debian: sudo apt-get remove -y kitty
       fedora: sudo dnf remove -y kitty
@@ -74,18 +47,25 @@ tools:
     depends_on: [kitty]
     install:
       all: |
-        mkdir -p ~/.config/kitty
-        cp -r $DEVSTACK_CONFIG/kitty/* ~/.config/kitty/
+        mkdir -p ~/.config/kitty/vitualizz
+        cp $DEVSTACK_CONFIG/kitty/* ~/.config/kitty/vitualizz/
+        if ! grep -qs "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf; then
+          [ -f ~/.config/kitty/kitty.conf ] && cp ~/.config/kitty/kitty.conf ~/.config/kitty/kitty.conf.bak-$(date +%Y%m%d%H%M%S)
+          CURRENT=$(cat ~/.config/kitty/kitty.conf 2>/dev/null)
+          printf 'include vitualizz/kitty.conf\n%s\n' "$CURRENT" > ~/.config/kitty/kitty.conf
+        fi
     uninstall:
-      all: rm -rf ~/.config/kitty
-    check: test -f ~/.config/kitty/kitty.conf
+      all: |
+        if [ -f ~/.config/kitty/kitty.conf ]; then
+          KEEP=$(grep -v "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf)
+          printf '%s\n' "$KEEP" > ~/.config/kitty/kitty.conf
+        fi
+        rm -rf ~/.config/kitty/vitualizz
+    check: grep -qs "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf && test -f ~/.config/kitty/vitualizz/kitty.conf
     description: "Config Tokyo Night para Kitty"
     enabled: true
     required: false
 
-  # =====================================================================
-  # SHELL
-  # =====================================================================
   - name: zsh
     category: shell
     install:
@@ -93,7 +73,9 @@ tools:
       arch: sudo pacman -S --noconfirm zsh
       fedora: sudo dnf install -y zsh
       suse: sudo zypper install -y zsh
+      brew: brew install zsh
     uninstall:
+      macos: echo "zsh is part of macOS; leaving it in place"
       debian: sudo apt-get remove -y zsh
       arch: sudo pacman -R --noconfirm zsh
       fedora: sudo dnf remove -y zsh
@@ -103,41 +85,25 @@ tools:
     required: true
     alternatives: [bash, fish]
 
-  - name: oh-my-zsh
+  - name: zsh-config
     category: shell
     depends_on: [zsh]
     install:
-      all: test -d ~/.oh-my-zsh || sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    uninstall:
-      all: uninstall_oh_my_zsh 2>/dev/null || rm -rf ~/.oh-my-zsh
-    check: test -d ~/.oh-my-zsh
-    description: "Framework para Zsh"
-    enabled: true
-    required: false
-
-  - name: powerlevel10k
-    category: shell
-    depends_on: [oh-my-zsh]
-    install:
-      all: test -d ~/.oh-my-zsh/custom/themes/powerlevel10k || git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
-    uninstall:
-      all: rm -rf ~/.oh-my-zsh/custom/themes/powerlevel10k
-    check: test -d ~/.oh-my-zsh/custom/themes/powerlevel10k
-    description: "Tema Powerlevel10k para Zsh"
-    enabled: true
-    required: false
-
-  - name: zsh-config
-    category: shell
-    depends_on: [zsh, oh-my-zsh]
-    install:
       all: |
-        cp $DEVSTACK_CONFIG/zsh/zshrc ~/.zshrc
-        cp $DEVSTACK_CONFIG/zsh/zshenv ~/.zshenv
-        cp $DEVSTACK_CONFIG/zsh/zprofile ~/.zprofile
+        mkdir -p ~/.config/vitualizz-devstack
+        cp $DEVSTACK_CONFIG/zsh/zshrc ~/.config/vitualizz-devstack/zshrc
+        if ! grep -qs "# vitualizz-devstack$" ~/.zshrc; then
+          [ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak-$(date +%Y%m%d%H%M%S)
+          printf '\n%s\n' '[[ -r ~/.config/vitualizz-devstack/zshrc ]] && source ~/.config/vitualizz-devstack/zshrc  # vitualizz-devstack' >> ~/.zshrc
+        fi
     uninstall:
-      all: rm -f ~/.zshrc ~/.zshenv ~/.zprofile
-    check: test -f ~/.zshrc
+      all: |
+        if [ -f ~/.zshrc ]; then
+          KEEP=$(grep -v "# vitualizz-devstack$" ~/.zshrc)
+          printf '%s\n' "$KEEP" > ~/.zshrc
+        fi
+        rm -rf ~/.config/vitualizz-devstack
+    check: grep -qs "# vitualizz-devstack$" ~/.zshrc && test -f ~/.config/vitualizz-devstack/zshrc
     description: "Configuración personal para Zsh"
     enabled: true
     required: false
@@ -146,8 +112,10 @@ tools:
     category: shell
     depends_on: [zsh]
     install:
+      brew: brew install starship
       fallback: curl -sS https://starship.rs/install.sh | sh -s -- --yes --force
     uninstall:
+      brew: brew uninstall starship
       all: rm -f ~/.local/bin/starship
     check: starship --version
     description: "Prompt moderno para Shell"
@@ -155,9 +123,6 @@ tools:
     required: false
     source_url: https://starship.rs
 
-  # =====================================================================
-  # EDITOR
-  # =====================================================================
   - name: neovim
     category: editor
     install:
@@ -168,6 +133,7 @@ tools:
         sudo apt-get install -y neovim
       arch: sudo pacman -S --noconfirm neovim
       fedora: sudo dnf install -y neovim
+      brew: brew install neovim
       fallback: |
         curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
         sudo tar xzf nvim-linux-x86_64.tar.gz -C /opt
@@ -177,6 +143,7 @@ tools:
       debian: sudo apt-get remove -y neovim
       arch: sudo pacman -R --noconfirm neovim
       fedora: sudo dnf remove -y neovim
+      brew: brew uninstall neovim
       fallback: sudo rm -f /usr/local/bin/nvim
     check: nvim --version
     description: "Editor de texto (Neovim)"
@@ -184,14 +151,13 @@ tools:
     required: true
     source_url: https://github.com/neovim/neovim
 
-  # =====================================================================
-  # VERSION MANAGER
-  # =====================================================================
   - name: mise
     category: tools
     install:
+      brew: brew install mise
       fallback: curl https://mise.run | MISE_YES=1 sh
     uninstall:
+      brew: brew uninstall mise
       all: rm -rf ~/.local/share/mise
     check: mise --version
     description: "Gestor de versiones (Rust, Node, Python)"
@@ -199,9 +165,6 @@ tools:
     required: true
     source_url: https://mise.jdx.dev
 
-  # =====================================================================
-  # BUILD ESSENTIALS
-  # =====================================================================
   - name: build-essential
     category: tools
     install:
@@ -209,27 +172,28 @@ tools:
       arch: sudo pacman -S --noconfirm base-devel
       fedora: sudo dnf groupinstall -y "Development Tools"
       suse: sudo zypper install -y -t pattern devel_basis
+      macos: |
+        xcode-select -p >/dev/null 2>&1 || {
+          xcode-select --install
+          echo "Accept the Xcode Command Line Tools dialog, then run DevStack again." >&2
+          exit 1
+        }
     check: gcc --version
     description: "Build tools (gcc, g++, make) needed for cargo install"
     enabled: true
     required: true
 
-  # =====================================================================
-  # RUST TOOLCHAIN
-  # =====================================================================
   - name: rustup
     category: tools
     install:
       all: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        # Update PATH in user's shell config for interactive sessions
         RC_LINE='export PATH="$HOME/.cargo/bin:$PATH"'
         for rc in ~/.bashrc ~/.zshrc; do
           if [ -f "$rc" ]; then
             grep -qF "$RC_LINE" "$rc" 2>/dev/null || echo "$RC_LINE" >> "$rc"
           fi
         done
-        # Source immediately for current session
         [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
     uninstall:
       all: rustup self uninstall -y
@@ -239,14 +203,13 @@ tools:
     required: false
     source_url: https://rustup.rs
 
-  # =====================================================================
-  # AI
-  # =====================================================================
   - name: opencode
     category: tools
     install:
+      brew: brew install opencode
       all: curl -fsSL https://opencode.ai/install | bash
     uninstall:
+      brew: brew uninstall opencode
       all: rm -f ~/.opencode/bin/opencode
     check: opencode --version
     description: "Asistente de IA para programar"
@@ -254,14 +217,13 @@ tools:
     required: false
     source_url: https://opencode.ai
 
-  # =====================================================================
-  # CONTAINERS
-  # =====================================================================
   - name: docker
     category: container
     install:
+      macos: brew install --cask docker-desktop
       all: curl -fsSL https://get.docker.com | sh
     uninstall:
+      macos: brew uninstall --cask docker-desktop
       debian: sudo apt-get remove -y docker-ce
       arch: sudo pacman -R --noconfirm docker
       fedora: sudo dnf remove -y docker-ce
@@ -282,6 +244,11 @@ tools:
         sudo pacman -S --noconfirm docker-compose
       fedora: |
         sudo dnf install -y docker-compose
+      macos: |
+        docker compose version || {
+          echo "docker compose ships with Docker Desktop: install docker first and open Docker.app once." >&2
+          exit 1
+        }
       fallback: |
         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
@@ -289,6 +256,7 @@ tools:
       debian: sudo apt-get remove -y docker-compose-plugin
       arch: sudo pacman -R --noconfirm docker-compose
       fedora: sudo dnf remove -y docker-compose
+      macos: echo "docker compose is bundled with Docker Desktop; uninstall docker instead"
       fallback: sudo rm -f /usr/local/bin/docker-compose
     check: docker compose version
     description: "Plugin Docker Compose"
@@ -296,19 +264,18 @@ tools:
     required: false
     source_url: https://github.com/docker/compose
 
-  # =====================================================================
-  # CLI TOOLS: FUZZY FINDER
-  # =====================================================================
   - name: fzf
     category: tools
     install:
       debian: sudo apt-get install -y fzf
       arch: sudo pacman -S --noconfirm fzf
       fedora: sudo dnf install -y fzf
+      brew: brew install fzf
       fallback: |
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
         yes | ~/.fzf/install --bin
     uninstall:
+      brew: brew uninstall fzf
       all: rm -rf ~/.fzf
     check: fzf --version
     description: "Buscador difuso interactivo"
@@ -316,20 +283,19 @@ tools:
     required: false
     source_url: https://github.com/junegunn/fzf
 
-  # =====================================================================
-  # CLI TOOLS: BAT
-  # =====================================================================
   - name: bat
     category: tools
     install:
       debian: sudo apt-get install -y bat
       arch: sudo pacman -S --noconfirm bat
       fedora: sudo dnf install -y bat
+      brew: brew install bat
       fallback: cargo install bat
     uninstall:
       debian: sudo apt-get remove -y bat
       arch: sudo pacman -R --noconfirm bat
       fedora: sudo dnf remove -y bat
+      brew: brew uninstall bat
       fallback: cargo uninstall bat
     check: bat --version
     description: "cat con resaltado de sintaxis"
@@ -337,9 +303,6 @@ tools:
     required: false
     source_url: https://github.com/sharkdp/bat
 
-  # =====================================================================
-  # CLI TOOLS: EZA
-  # =====================================================================
   - name: eza
     category: tools
     install:
@@ -351,10 +314,12 @@ tools:
         sudo apt-get install -y eza
       arch: sudo pacman -S --noconfirm eza
       fedora: sudo dnf install -y eza
+      brew: brew install eza
       fallback: cargo install eza
     uninstall:
       arch: sudo pacman -R --noconfirm eza
       fedora: sudo dnf remove -y eza
+      brew: brew uninstall eza
       fallback: cargo uninstall eza
     check: eza --version
     description: "Reemplazo moderno de ls"
@@ -362,15 +327,14 @@ tools:
     required: false
     source_url: https://github.com/eza-community/eza
 
-  # =====================================================================
-  # CLI TOOLS: YAZI
-  # =====================================================================
   - name: yazi
     category: tools
     depends_on: [rustup, build-essential]
     install:
+      brew: brew install yazi
       all: cargo install yazi-fm yazi-cli --locked
     uninstall:
+      brew: brew uninstall yazi
       all: cargo uninstall yazi-fm yazi-cli
     check: ya --version
     description: "Gestor de archivos en terminal"
@@ -378,9 +342,6 @@ tools:
     required: false
     source_url: https://github.com/sxyazi/yazi
 
-  # =====================================================================
-  # CLI TOOLS: JQ
-  # =====================================================================
   - name: jq
     category: tools
     install:
@@ -400,9 +361,6 @@ tools:
     enabled: true
     required: false
 
-  # =====================================================================
-  # CLI TOOLS: LAZYGIT
-  # =====================================================================
   - name: lazygit
     category: tools
     install:
@@ -413,7 +371,9 @@ tools:
         tar xf lazygit.tar.gz lazygit
         sudo install lazygit -D -t /usr/local/bin/
         rm -f lazygit.tar.gz
+      brew: brew install lazygit
     uninstall:
+      brew: brew uninstall lazygit
       all: rm -f ~/.local/bin/lazygit
     check: lazygit --version
     description: "UI visual para Git"
@@ -421,9 +381,6 @@ tools:
     required: false
     source_url: https://github.com/jesseduffield/lazygit
 
-  # =====================================================================
-  # CLI TOOLS: DIRENV
-  # =====================================================================
   - name: direnv
     category: tools
     install:
@@ -444,14 +401,13 @@ tools:
     required: false
     source_url: https://github.com/direnv/direnv
 
-  # =====================================================================
-  # CLI TOOLS: ZOXIDE
-  # =====================================================================
   - name: zoxide
     category: tools
     install:
+      brew: brew install zoxide
       fallback: curl -sSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
     uninstall:
+      brew: brew uninstall zoxide
       all: rm -f ~/.local/bin/zoxide
     check: zoxide --version
     description: "cd inteligente que aprende"
@@ -459,15 +415,14 @@ tools:
     required: false
     source_url: https://github.com/ajeetdsouza/zoxide
 
-  # =====================================================================
-  # CLI TOOLS: BOTTOM
-  # =====================================================================
   - name: bottom
     category: tools
     depends_on: [rustup, build-essential]
     install:
+      brew: brew install bottom
       all: cargo install bottom --locked
     uninstall:
+      brew: brew uninstall bottom
       all: cargo uninstall bottom
     check: btm --version
     description: "Monitor del sistema"
@@ -475,9 +430,6 @@ tools:
     required: false
     source_url: https://github.com/ClementTsang/bottom
 
-  # =====================================================================
-  # CLI TOOLS: GH (GitHub CLI)
-  # =====================================================================
   - name: gh
     category: tools
     install:
@@ -501,14 +453,13 @@ tools:
     required: false
     source_url: https://github.com/cli/cli
 
-  # =====================================================================
-  # CLI TOOLS: UV (Python)
-  # =====================================================================
   - name: uv
     category: tools
     install:
+      brew: brew install uv
       all: curl -LsSf https://astral.sh/uv/install.sh | sh
     uninstall:
+      brew: brew uninstall uv
       all: rm -f ~/.local/bin/uv
     check: uv --version
     description: "Gestor de paquetes Python ultrarrápido"
@@ -516,24 +467,26 @@ tools:
     required: false
     source_url: https://github.com/astral-sh/uv
 
-  # =====================================================================
-  # CLI TOOLS: HTTPIE
-  # =====================================================================
   - name: httpie
     category: tools
     install:
-      all: sudo apt-get install -y python3-pip && pip3 install httpie
+      debian: sudo apt-get install -y httpie
+      arch: sudo pacman -S --noconfirm httpie
+      fedora: sudo dnf install -y httpie
+      brew: brew install httpie
+      fallback: python3 -m pip install --user httpie
     uninstall:
-      all: pip uninstall httpie -y
+      debian: sudo apt-get remove -y httpie
+      arch: sudo pacman -R --noconfirm httpie
+      fedora: sudo dnf remove -y httpie
+      brew: brew uninstall httpie
+      fallback: python3 -m pip uninstall -y httpie
     check: http --version
     description: "Cliente HTTP amigable"
     enabled: true
     required: false
     source_url: https://github.com/httpie/httpie
 
-  # =====================================================================
-  # CLI TOOLS: YQ (YAML)
-  # =====================================================================
   - name: yq
     category: tools
     install:
@@ -554,9 +507,6 @@ tools:
     required: false
     source_url: https://github.com/mikefarah/yq
 
-  # =====================================================================
-  # CLI TOOLS: RIPGREP
-  # =====================================================================
   - name: ripgrep
     category: tools
     install:
@@ -575,9 +525,6 @@ tools:
     required: false
     source_url: https://github.com/BurntSushi/ripgrep
 
-  # =====================================================================
-  # CLI TOOLS: FD
-  # =====================================================================
   - name: fd
     category: tools
     install:
@@ -598,15 +545,14 @@ tools:
     required: false
     source_url: https://github.com/sharkdp/fd
 
-  # =====================================================================
-  # CLI TOOLS: SD
-  # =====================================================================
   - name: sd
     category: tools
     depends_on: [rustup, build-essential]
     install:
+      brew: brew install sd
       fallback: . "$HOME/.cargo/env" && cargo install sd --quiet
     uninstall:
+      brew: brew uninstall sd
       all: . "$HOME/.cargo/env" && cargo uninstall sd
     check: sd --version
     description: "Reemplazo moderno de sed"
@@ -614,9 +560,6 @@ tools:
     required: false
     source_url: https://github.com/chmln/sd
 
-  # =====================================================================
-  # CLI TOOLS: DELTA
-  # =====================================================================
   - name: delta
     category: tools
     install:
@@ -632,6 +575,7 @@ tools:
       debian: sudo dpkg -r git-delta
       arch: sudo pacman -R --noconfirm git-delta
       fedora: sudo dnf remove -y git-delta
+      brew: brew uninstall git-delta
       all: rm -f /usr/local/bin/delta
     check: delta --version
     description: "Diff con syntax highlighting para Git"
@@ -639,9 +583,6 @@ tools:
     required: false
     source_url: https://github.com/dandavison/delta
 
-  # =====================================================================
-  # CLI TOOLS: DUF
-  # =====================================================================
   - name: duf
     category: tools
     install:
@@ -660,9 +601,6 @@ tools:
     required: false
     source_url: https://github.com/muesli/duf
 
-  # =====================================================================
-  # CLI TOOLS: DUST
-  # =====================================================================
   - name: dust
     category: tools
     install:
@@ -675,6 +613,7 @@ tools:
       fallback: cargo install du-dust
     uninstall:
       arch: sudo pacman -R --noconfirm dust
+      brew: brew uninstall dust
       all: rm -f /usr/local/bin/dust
     check: dust --version
     description: "Reemplazo moderno de du (uso de disco por directorio)"
@@ -682,9 +621,6 @@ tools:
     required: false
     source_url: https://github.com/bootandy/dust
 
-  # =====================================================================
-  # CLI TOOLS: FASTFETCH
-  # =====================================================================
   - name: fastfetch
     category: tools
     install:
@@ -708,9 +644,6 @@ tools:
     required: false
     source_url: https://github.com/fastfetch-cli/fastfetch
 
-  # =====================================================================
-  # CLI TOOLS: BTOP
-  # =====================================================================
   - name: btop
     category: tools
     install:
@@ -729,9 +662,6 @@ tools:
     required: false
     source_url: https://github.com/aristocratos/btop
 
-  # =====================================================================
-  # CLI TOOLS: ONEFETCH
-  # =====================================================================
   - name: onefetch
     category: tools
     install:
@@ -742,6 +672,7 @@ tools:
       fallback: cargo install onefetch
     uninstall:
       arch: sudo pacman -R --noconfirm onefetch
+      brew: brew uninstall onefetch
       all: rm -f /usr/local/bin/onefetch
     check: onefetch --version
     description: "Resumen visual del repo git (como neofetch para proyectos)"
@@ -749,9 +680,6 @@ tools:
     required: false
     source_url: https://github.com/o2sh/onefetch
 
-  # =====================================================================
-  # CLI TOOLS: GLOW
-  # =====================================================================
   - name: glow
     category: tools
     install:
@@ -774,18 +702,16 @@ tools:
     required: false
     source_url: https://github.com/charmbracelet/glow
 
-
-  # =====================================================================
-  # CLI TOOLS: TEALDEER (tldr)
-  # =====================================================================
   - name: tealdeer
     category: tools
     install:
       debian: sudo apt-get install -y tldr
       arch: sudo pacman -S --noconfirm tealdeer
       fedora: sudo dnf install -y tealdeer
+      brew: brew install tealdeer
       fallback: cargo install tealdeer
     uninstall:
+      brew: brew uninstall tealdeer
       all: rm -f /usr/local/bin/tldr
     check: tldr --version
     description: "Man pages simplificadas (tldr)"
@@ -793,9 +719,6 @@ tools:
     required: false
     source_url: https://github.com/tealdeer-rs/tealdeer
 
-  # =====================================================================
-  # FONTS
-  # =====================================================================
   - name: hack-nerd-fonts
     category: fonts
     install:
@@ -805,9 +728,11 @@ tools:
         unzip -o ~/.local/share/fonts/Hack.zip -d ~/.local/share/fonts/Hack
         rm -f ~/.local/share/fonts/Hack.zip
         fc-cache -f ~/.local/share/fonts 2>/dev/null || true
+      macos: brew install --cask font-hack-nerd-font
     uninstall:
+      macos: brew uninstall --cask font-hack-nerd-font
       all: rm -rf ~/.local/share/fonts/Hack
-    check: test -d ~/.local/share/fonts/Hack
+    check: find ~/.local/share/fonts ~/Library/Fonts -maxdepth 2 -name 'HackNerdFont*' 2>/dev/null | grep -q .
     description: "Fuente Hack Nerd"
     enabled: true
     required: false
@@ -822,9 +747,11 @@ tools:
         unzip -o ~/.local/share/fonts/JetBrainsMono.zip -d ~/.local/share/fonts/JetBrainsMono
         rm -f ~/.local/share/fonts/JetBrainsMono.zip
         fc-cache -f ~/.local/share/fonts 2>/dev/null || true
+      macos: brew install --cask font-jetbrains-mono-nerd-font
     uninstall:
+      macos: brew uninstall --cask font-jetbrains-mono-nerd-font
       all: rm -rf ~/.local/share/fonts/JetBrainsMono
-    check: test -d ~/.local/share/fonts/JetBrainsMono
+    check: find ~/.local/share/fonts ~/Library/Fonts -maxdepth 2 -name 'JetBrainsMonoNerdFont*' 2>/dev/null | grep -q .
     description: "JetBrains Mono Nerd Font (la más popular para dev)"
     enabled: true
     required: false
@@ -839,25 +766,24 @@ tools:
         unzip -o ~/.local/share/fonts/FiraCode.zip -d ~/.local/share/fonts/FiraCode
         rm -f ~/.local/share/fonts/FiraCode.zip
         fc-cache -f ~/.local/share/fonts 2>/dev/null || true
+      macos: brew install --cask font-fira-code-nerd-font
     uninstall:
+      macos: brew uninstall --cask font-fira-code-nerd-font
       all: rm -rf ~/.local/share/fonts/FiraCode
-    check: test -d ~/.local/share/fonts/FiraCode
+    check: find ~/.local/share/fonts ~/Library/Fonts -maxdepth 2 -name 'FiraCodeNerdFont*' 2>/dev/null | grep -q .
     description: "Fira Code Nerd Font (con ligaduras)"
     enabled: true
     required: false
     source_url: https://github.com/ryanoasis/nerd-fonts
 
-  # =====================================================================
-  # ZSH PLUGINS
-  # =====================================================================
   - name: zsh-autosuggestions
     category: shell
-    depends_on: [oh-my-zsh]
+    depends_on: [zsh]
     install:
-      all: test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+      all: test -d ~/.zsh/plugins/zsh-autosuggestions || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
     uninstall:
-      all: rm -rf ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-    check: test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+      all: rm -rf ~/.zsh/plugins/zsh-autosuggestions
+    check: test -d ~/.zsh/plugins/zsh-autosuggestions
     description: "Autosugerencias para Zsh"
     enabled: true
     required: false
@@ -865,26 +791,24 @@ tools:
 
   - name: zsh-syntax-highlighting
     category: shell
-    depends_on: [oh-my-zsh]
+    depends_on: [zsh]
     install:
-      all: test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting || git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+      all: test -d ~/.zsh/plugins/zsh-syntax-highlighting || git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
     uninstall:
-      all: rm -rf ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-    check: test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+      all: rm -rf ~/.zsh/plugins/zsh-syntax-highlighting
+    check: test -d ~/.zsh/plugins/zsh-syntax-highlighting
     description: "Resaltado de sintaxis para Zsh"
     enabled: true
     required: false
     source_url: https://github.com/zsh-users/zsh-syntax-highlighting
 
-
-  # =====================================================================
-  # SHELL: ATUIN
-  # =====================================================================
   - name: atuin
     category: shell
     install:
+      brew: brew install atuin
       all: curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive
     uninstall:
+      brew: brew uninstall atuin
       all: rm -f ~/.local/bin/atuin
     check: atuin --version
     description: "Historial de shell con búsqueda fuzzy (Ctrl+R)"
@@ -892,15 +816,14 @@ tools:
     required: false
     source_url: https://atuin.sh
 
-  # =====================================================================
-  # DOCKER: LAZYDOCKER
-  # =====================================================================
   - name: lazydocker
     category: container
     depends_on: [docker]
     install:
+      brew: brew install lazydocker
       all: curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
     uninstall:
+      brew: brew uninstall lazydocker
       all: rm -f ~/.local/bin/lazydocker
     check: lazydocker --version
     description: "UI visual para Docker (TUI)"
@@ -908,9 +831,6 @@ tools:
     required: false
     source_url: https://github.com/jesseduffield/lazydocker
 
-  # =====================================================================
-  # DOCKER FILES
-  # =====================================================================
   - name: docker-filemanager
     category: container
     depends_on: [docker]
@@ -923,7 +843,7 @@ tools:
           portainer/portainer-ce:latest
     uninstall:
       all: docker stop portainer && docker rm portainer && docker volume rm portainer_data
-    check: docker ps --filter name=portainer
+    check: docker ps -aq --filter 'name=^portainer$' | grep -q .
     description: "UI web para Docker (Portainer)"
     enabled: false
     required: false

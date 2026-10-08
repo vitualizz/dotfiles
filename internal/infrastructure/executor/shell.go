@@ -9,31 +9,27 @@ import (
 	"time"
 )
 
-// ShellExecutor runs shell commands via /bin/sh or /bin/zsh.
 type ShellExecutor struct {
-	// EnvVars are prepended as exports to every command.
 	EnvVars []string
-	// ToolName is set before each command for logging purposes.
 	ToolName string
-	// LogFunc is called with (toolName, command, output, err, duration) after each execution.
 	LogFunc func(toolName, command string, output string, err error, duration time.Duration)
+	Detached bool
 }
 
 func NewShellExecutor() *ShellExecutor {
 	return &ShellExecutor{}
 }
 
-// toolPaths returns common directories where dev tools install binaries.
 func toolPaths() string {
-	return "$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.mise/bin:$HOME/go/bin:$HOME/.opencode/bin:/usr/local/bin"
+	return "$HOME/.cargo/bin:$HOME/.local/bin:$HOME/.mise/bin:$HOME/go/bin:$HOME/.opencode/bin:" +
+		"/opt/homebrew/bin:/opt/homebrew/sbin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin"
 }
 
-// wrapCmd prepends environment variable exports and tool paths if needed.
-func (e *ShellExecutor) wrapCmd(cmd string) string {
-	// Always prepend tool paths to PATH so tools like cargo, mise, etc. are found
-	wrapped := fmt.Sprintf("export PATH=%s:$PATH && ", toolPaths())
+const baseEnv = "export NONINTERACTIVE=1 HOMEBREW_NO_ENV_HINTS=1 && "
 
-	// Inject env vars if command references them
+func (e *ShellExecutor) wrapCmd(cmd string) string {
+	wrapped := fmt.Sprintf("export PATH=%s:$PATH && ", toolPaths()) + baseEnv
+
 	if len(e.EnvVars) > 0 {
 		hasRef := false
 		for _, env := range e.EnvVars {
@@ -63,6 +59,9 @@ func (e *ShellExecutor) Execute(cmd string) (string, error) {
 
 	sh, c := shellArgs()
 	command := exec.Command(sh, c, e.wrapCmd(cmd))
+	if e.Detached {
+		detach(command)
+	}
 	var stdout, stderr bytes.Buffer
 	command.Stdout = &stdout
 	command.Stderr = &stderr
@@ -88,7 +87,7 @@ func (e *ShellExecutor) Execute(cmd string) (string, error) {
 	return fmt.Sprintf("[%dms] %s", duration.Milliseconds(), out), nil
 }
 
-const installTimeout = 3 * time.Minute
+const installTimeout = 15 * time.Minute
 
 func (e *ShellExecutor) ExecuteWithOutput(cmd string) (string, error) {
 	start := time.Now()
@@ -98,6 +97,9 @@ func (e *ShellExecutor) ExecuteWithOutput(cmd string) (string, error) {
 	defer cancel()
 
 	command := exec.CommandContext(ctx, sh, c, e.wrapCmd(cmd))
+	if e.Detached {
+		detach(command)
+	}
 	output, err := command.CombinedOutput()
 	duration := time.Since(start)
 
@@ -114,7 +116,6 @@ func (e *ShellExecutor) ExecuteWithOutput(cmd string) (string, error) {
 	return string(output), nil
 }
 
-// shellArgs returns the preferred shell and argument flag.
 func shellArgs() (string, string) {
 	if isZshAvailable() {
 		return "/bin/zsh", "-c"

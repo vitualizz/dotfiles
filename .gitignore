@@ -1,13 +1,9 @@
-# Binary (root only)
 /envsetup
 /vitualizz-devstack
 
-# opencode runtime
 .opencode/
 
-# Vagrant local state
 .vagrant/
 .vagrant.d/
 
-# GoReleaser artifacts
 dist/
