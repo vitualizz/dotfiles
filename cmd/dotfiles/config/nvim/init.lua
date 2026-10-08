@@ -92,6 +92,13 @@ do
   -- Enable faster startup by caching compiled Lua modules
   vim.loader.enable()
 
+  -- Install new plugins without asking for confirmation. Any call can still
+  -- pass `{ confirm = true }` to override it. See `:help vim.pack.add()`
+  local pack_add = vim.pack.add
+  vim.pack.add = function(specs, opts)
+    return pack_add(specs, vim.tbl_extend('keep', opts or {}, { confirm = false }))
+  end
+
   -- Set <space> as the leader key
   -- See `:help mapleader`
   --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
