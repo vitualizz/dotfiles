@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,14 +20,8 @@ import (
 	"github.com/vitualizz/vitualizz-devstack/i18n/locales"
 )
 
-//go:embed config/tools.yaml
-var embeddedToolsYAML []byte
-
-//go:embed all:config/kitty/*
-var embeddedKitty embed.FS
-
-//go:embed all:config/zsh/*
-var embeddedZsh embed.FS
+//go:embed all:config
+var embeddedConfig embed.FS
 
 func main() {
 	ciMode := false
@@ -129,60 +124,15 @@ func preflight(distro entities.Distro) error {
 }
 
 func extractEmbeddedConfig() (string, error) {
-	tmpDir, err := os.MkdirTemp("", "devstack-config-*")
+	tmpDir, err := os.MkdirTemp("", "dotfiles-config-*")
 	if err != nil {
 		return "", err
 	}
-
-	if err := os.WriteFile(filepath.Join(tmpDir, "tools.yaml"), embeddedToolsYAML, 0o644); err != nil {
-		return "", err
-	}
-
-	kittyDir := filepath.Join(tmpDir, "kitty")
-	if err := os.MkdirAll(kittyDir, 0o755); err != nil {
-		return "", err
-	}
-
-	kittyFiles, err := embeddedKitty.ReadDir("config/kitty")
+	root, err := fs.Sub(embeddedConfig, "config")
 	if err != nil {
 		return "", err
 	}
-	for _, f := range kittyFiles {
-		if f.IsDir() {
-			continue
-		}
-		data, err := embeddedKitty.ReadFile(filepath.Join("config", "kitty", f.Name()))
-		if err != nil {
-			return "", err
-		}
-		if err := os.WriteFile(filepath.Join(kittyDir, f.Name()), data, 0o644); err != nil {
-			return "", err
-		}
-	}
-
-	zshDir := filepath.Join(tmpDir, "zsh")
-	if err := os.MkdirAll(zshDir, 0o755); err != nil {
-		return "", err
-	}
-
-	zshFiles, err := embeddedZsh.ReadDir("config/zsh")
-	if err != nil {
-		return "", err
-	}
-	for _, f := range zshFiles {
-		if f.IsDir() {
-			continue
-		}
-		data, err := embeddedZsh.ReadFile(filepath.Join("config", "zsh", f.Name()))
-		if err != nil {
-			return "", err
-		}
-		if err := os.WriteFile(filepath.Join(zshDir, f.Name()), data, 0o644); err != nil {
-			return "", err
-		}
-	}
-
-	return tmpDir, nil
+	return tmpDir, os.CopyFS(tmpDir, root)
 }
 
 func runCI(repo *config.ToolRepository, installer *installers.ToolInstaller, inDocker bool, log *logger.InstallLogger) {

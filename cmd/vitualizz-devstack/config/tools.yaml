@@ -47,22 +47,14 @@ tools:
     depends_on: [kitty]
     install:
       all: |
-        mkdir -p ~/.config/kitty/vitualizz
-        cp $DEVSTACK_CONFIG/kitty/* ~/.config/kitty/vitualizz/
-        if ! grep -qs "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf; then
-          [ -f ~/.config/kitty/kitty.conf ] && cp ~/.config/kitty/kitty.conf ~/.config/kitty/kitty.conf.bak-$(date +%Y%m%d%H%M%S)
-          CURRENT=$(cat ~/.config/kitty/kitty.conf 2>/dev/null)
-          printf 'include vitualizz/kitty.conf\n%s\n' "$CURRENT" > ~/.config/kitty/kitty.conf
-        fi
+        mkdir -p ~/.config/kitty
+        for f in $DEVSTACK_CONFIG/kitty/*; do
+          [ -e ~/.config/kitty/$(basename $f) ] || cp $f ~/.config/kitty/
+        done
     uninstall:
-      all: |
-        if [ -f ~/.config/kitty/kitty.conf ]; then
-          KEEP=$(grep -v "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf)
-          printf '%s\n' "$KEEP" > ~/.config/kitty/kitty.conf
-        fi
-        rm -rf ~/.config/kitty/vitualizz
-    check: grep -qs "^include vitualizz/kitty.conf$" ~/.config/kitty/kitty.conf && test -f ~/.config/kitty/vitualizz/kitty.conf
-    description: "Config Tokyo Night para Kitty"
+      all: echo "~/.config/kitty es tuyo; no se modifica"
+    check: test -e ~/.config/kitty/kitty.conf
+    description: "Siembra kitty.conf y el tema Vitualizz si no existen"
     enabled: true
     required: false
 
@@ -90,21 +82,14 @@ tools:
     depends_on: [zsh]
     install:
       all: |
-        mkdir -p ~/.config/vitualizz-devstack
-        cp $DEVSTACK_CONFIG/zsh/zshrc ~/.config/vitualizz-devstack/zshrc
-        if ! grep -qs "# vitualizz-devstack$" ~/.zshrc; then
-          [ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak-$(date +%Y%m%d%H%M%S)
-          printf '\n%s\n' '[[ -r ~/.config/vitualizz-devstack/zshrc ]] && source ~/.config/vitualizz-devstack/zshrc  # vitualizz-devstack' >> ~/.zshrc
+        if ! grep -qs "vitualizz dotfiles" ~/.zshrc; then
+          [ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak-$(date +%Y%m%d%H%M%S) && printf '\n' >> ~/.zshrc
+          cat $DEVSTACK_CONFIG/zsh/zshrc >> ~/.zshrc
         fi
     uninstall:
-      all: |
-        if [ -f ~/.zshrc ]; then
-          KEEP=$(grep -v "# vitualizz-devstack$" ~/.zshrc)
-          printf '%s\n' "$KEEP" > ~/.zshrc
-        fi
-        rm -rf ~/.config/vitualizz-devstack
-    check: grep -qs "# vitualizz-devstack$" ~/.zshrc && test -f ~/.config/vitualizz-devstack/zshrc
-    description: "Configuración personal para Zsh"
+      all: echo "~/.zshrc es tuyo; no se modifica"
+    check: grep -qs "vitualizz dotfiles" ~/.zshrc
+    description: "Siembra el bloque vitualizz dotfiles en ~/.zshrc"
     enabled: true
     required: false
 
@@ -122,6 +107,20 @@ tools:
     enabled: true
     required: false
     source_url: https://starship.rs
+
+  - name: starship-config
+    category: shell
+    depends_on: [starship]
+    install:
+      all: |
+        mkdir -p ~/.config
+        [ -e ~/.config/starship.toml ] || cp $DEVSTACK_CONFIG/starship/starship.toml ~/.config/starship.toml
+    uninstall:
+      all: echo "~/.config/starship.toml es tuyo; no se modifica"
+    check: test -e ~/.config/starship.toml
+    description: "Siembra el prompt Vitualizz (estilo p10k rainbow) si no existe"
+    enabled: true
+    required: false
 
   - name: neovim
     category: editor
