@@ -2,20 +2,18 @@ package models
 
 import "github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
 
-// ViewState represents the TUI screens.
 type ViewState int
 
 const (
 	StateLanguageSelect ViewState = iota
 	StateThemeSelect
 	StateMainMenu
-	StateProgress // install/uninstall progress
-	StateThanks   // post-install/uninstall summary
+	StateProgress
+	StateThanks
 	StateSettings
 	StateAbout
 )
 
-// AppModel is the application state.
 type AppModel struct {
 	ViewState    ViewState
 	CurrentLang  string
@@ -24,21 +22,19 @@ type AppModel struct {
 	MainMenuChoice int
 	SettingsChoice int
 	ToolChoice   int
-	InDocker     bool // set to true when running inside a Docker container
+	InDocker     bool
 
-	// Progress state (shared between install and uninstall)
 	ProgressTools   []entities.Tool
 	ProgressIdx     int
 	ProgressResults []entities.InstallResult
-	ProgressStatus  map[string]bool // tool name → success
+	ProgressStatus  map[string]bool
 	ProgressLastOutput string
 	IsUninstallMode bool
 	ShowLog        bool
 	Results        []entities.InstallResult
-	LogPath        string // path to install log file
+	LogPath        string
 }
 
-// NewAppModel creates an initial model.
 func NewAppModel() *AppModel {
 	return &AppModel{
 		ViewState:      StateLanguageSelect,
@@ -51,7 +47,6 @@ func NewAppModel() *AppModel {
 	}
 }
 
-// StartProgress initializes the progress screen with the given tools.
 func (m *AppModel) StartProgress(tools []entities.Tool) {
 	m.ViewState = StateProgress
 	m.ProgressTools = tools
@@ -61,7 +56,6 @@ func (m *AppModel) StartProgress(tools []entities.Tool) {
 	m.IsUninstallMode = false
 }
 
-// StartUninstallProgress initializes the progress screen for uninstall.
 func (m *AppModel) StartUninstallProgress(tools []entities.Tool) {
 	m.ViewState = StateProgress
 	m.ProgressTools = tools
@@ -71,7 +65,6 @@ func (m *AppModel) StartUninstallProgress(tools []entities.Tool) {
 	m.IsUninstallMode = true
 }
 
-// UpdateProgress records the result of installing/uninstalling a tool.
 func (m *AppModel) UpdateProgress(tool entities.Tool, success bool, msg string) {
 	m.ProgressStatus[tool.Name] = success
 	m.ProgressResults = append(m.ProgressResults, entities.InstallResult{
@@ -83,7 +76,6 @@ func (m *AppModel) UpdateProgress(tool entities.Tool, success bool, msg string) 
 	m.ProgressIdx++
 }
 
-// GetCurrentProgressTool returns the tool being processed.
 func (m *AppModel) GetCurrentProgressTool() entities.Tool {
 	if m.ProgressIdx < len(m.ProgressTools) {
 		return m.ProgressTools[m.ProgressIdx]
@@ -91,12 +83,10 @@ func (m *AppModel) GetCurrentProgressTool() entities.Tool {
 	return entities.Tool{}
 }
 
-// IsProgressDone returns true if all tools have been processed.
 func (m *AppModel) IsProgressDone() bool {
 	return m.ProgressIdx >= len(m.ProgressTools)
 }
 
-// GetProgressStats returns total, success, and failed counts.
 func (m *AppModel) GetProgressStats() (total, success, failed int) {
 	total = len(m.ProgressTools)
 	for _, r := range m.ProgressResults {

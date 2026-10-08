@@ -168,9 +168,6 @@ func TestGetByCategory(t *testing.T) {
 func TestGetMainTools(t *testing.T) {
 	repo := newTestRepo(t)
 
-	// tool-a is not depended on by anyone -> it IS main
-	// Wait: tool-b depends on tool-a, tool-c depends on tool-b
-	// GetMainTools returns tools that NO OTHER tool depends on -> only tool-c
 	main := repo.GetMainTools()
 
 	if len(main) != 1 {

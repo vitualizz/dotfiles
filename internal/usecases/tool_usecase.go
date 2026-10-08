@@ -5,7 +5,6 @@ import (
 	"github.com/vitualizz/vitualizz-devstack/internal/domain/interfaces"
 )
 
-// InstallToolUseCase installs a single tool.
 type InstallToolUseCase struct {
 	installer interfaces.InstallerPort
 	repo     interfaces.ToolRepository
@@ -32,7 +31,6 @@ func (uc *InstallToolUseCase) Execute(tool *entities.Tool) (*entities.InstallRes
 	return uc.installer.Install(tool)
 }
 
-// UninstallToolUseCase uninstalls a single tool.
 type UninstallToolUseCase struct {
 	installer interfaces.InstallerPort
 	repo     interfaces.ToolRepository
@@ -59,7 +57,6 @@ func (uc *UninstallToolUseCase) Execute(tool *entities.Tool) (*entities.InstallR
 	return uc.installer.Uninstall(tool)
 }
 
-// ListToolsUseCase lists available tools.
 type ListToolsUseCase struct {
 	repo interfaces.ToolRepository
 }
@@ -80,7 +77,6 @@ func (uc *ListToolsUseCase) ExecuteByCategory(category entities.Category) []enti
 	return uc.repo.GetByCategory(category)
 }
 
-// CheckInstallationUseCase checks if a tool is installed.
 type CheckInstallationUseCase struct {
 	installer interfaces.InstallerPort
 }
@@ -93,7 +89,6 @@ func (uc *CheckInstallationUseCase) Execute(tool *entities.Tool) (bool, error) {
 	return uc.installer.IsInstalled(tool)
 }
 
-// BatchCheckStatusUseCase checks installation status for multiple tools.
 type BatchCheckStatusUseCase struct {
 	installer interfaces.InstallerPort
 }
@@ -111,7 +106,6 @@ func (uc *BatchCheckStatusUseCase) Execute(tools []entities.Tool) map[string]boo
 	return status
 }
 
-// BatchInstallUseCase installs multiple tools with dependency resolution.
 type BatchInstallUseCase struct {
 	installer interfaces.InstallerPort
 	repo     interfaces.ToolRepository
@@ -121,8 +115,6 @@ func NewBatchInstallUseCase(installer interfaces.InstallerPort, repo interfaces.
 	return &BatchInstallUseCase{installer: installer, repo: repo}
 }
 
-// Execute installs tools in dependency order.
-// Dependencies are installed first if not already present.
 func (uc *BatchInstallUseCase) Execute(tools []*entities.Tool) []*entities.InstallResult {
 	results := make([]*entities.InstallResult, 0, len(tools)*2)
 
@@ -134,9 +126,7 @@ func (uc *BatchInstallUseCase) Execute(tools []*entities.Tool) []*entities.Insta
 	return results
 }
 
-// installWithDeps installs a tool and its dependencies.
 func (uc *BatchInstallUseCase) installWithDeps(tool *entities.Tool, done []*entities.InstallResult) *entities.InstallResult {
-	// Skip bundles (no install command)
 	if !tool.HasInstallCommand() {
 		return &entities.InstallResult{
 			ToolName: tool.Name,
@@ -145,7 +135,6 @@ func (uc *BatchInstallUseCase) installWithDeps(tool *entities.Tool, done []*enti
 		}
 	}
 
-	// Check if already installed or already handled in this batch
 	if alreadyDone(tool.Name, done) {
 		return &entities.InstallResult{ToolName: tool.Name, Success: true, Message: "already installed"}
 	}
@@ -154,7 +143,6 @@ func (uc *BatchInstallUseCase) installWithDeps(tool *entities.Tool, done []*enti
 		return &entities.InstallResult{ToolName: tool.Name, Success: true, Message: "already installed"}
 	}
 
-	// Install dependencies first
 	for _, depName := range tool.DependsOn {
 		dep := uc.repo.GetByID(depName)
 		if dep == nil || !dep.HasInstallCommand() {
@@ -170,7 +158,6 @@ func (uc *BatchInstallUseCase) installWithDeps(tool *entities.Tool, done []*enti
 		}
 	}
 
-	// Install the tool
 	result, err := uc.installer.Install(tool)
 	if err != nil {
 		return &entities.InstallResult{
@@ -183,7 +170,6 @@ func (uc *BatchInstallUseCase) installWithDeps(tool *entities.Tool, done []*enti
 	return result
 }
 
-// alreadyDone checks if a tool was already successfully installed in this batch.
 func alreadyDone(name string, done []*entities.InstallResult) bool {
 	for _, r := range done {
 		if r.ToolName == name && r.Success {
@@ -193,9 +179,6 @@ func alreadyDone(name string, done []*entities.InstallResult) bool {
 	return false
 }
 
-// ResolveInstallOrder returns tools sorted in dependency order.
-// It includes missing dependencies that are not in the original selection.
-// Duplicate tools are deduplicated.
 func (uc *BatchInstallUseCase) ResolveInstallOrder(tools []entities.Tool) []entities.Tool {
 	seen := make(map[string]bool)
 	var ordered []entities.Tool
@@ -207,7 +190,6 @@ func (uc *BatchInstallUseCase) ResolveInstallOrder(tools []entities.Tool) []enti
 		}
 		seen[tool.Name] = true
 
-		// Resolve dependencies first
 		for _, depName := range tool.DependsOn {
 			dep := uc.repo.GetByID(depName)
 			if dep != nil && dep.HasInstallCommand() {

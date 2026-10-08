@@ -9,15 +9,12 @@ import (
 	"time"
 )
 
-// InstallLogger writes installation logs to a file and provides
-// the log path for user inspection.
 type InstallLogger struct {
 	file    *os.File
 	mu      sync.Mutex
 	logPath string
 }
 
-// NewInstallLogger creates a logger that writes to ~/.vitualizz-devstack/install.log.
 func NewInstallLogger() (*InstallLogger, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -35,18 +32,15 @@ func NewInstallLogger() (*InstallLogger, error) {
 		return nil, err
 	}
 
-	// Write session header
 	fmt.Fprintf(f, "\n=== Session started: %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
 
 	return &InstallLogger{file: f, logPath: logPath}, nil
 }
 
-// LogPath returns the path to the log file.
 func (l *InstallLogger) LogPath() string {
 	return l.logPath
 }
 
-// LogCommand logs a command before execution.
 func (l *InstallLogger) LogCommand(toolName, command string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -54,7 +48,6 @@ func (l *InstallLogger) LogCommand(toolName, command string) {
 	_ = l.file.Sync()
 }
 
-// LogSuccess logs a successful command with duration.
 func (l *InstallLogger) LogSuccess(toolName string, duration time.Duration) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -62,7 +55,6 @@ func (l *InstallLogger) LogSuccess(toolName string, duration time.Duration) {
 	_ = l.file.Sync()
 }
 
-// LogError logs a failed command with error and output.
 func (l *InstallLogger) LogError(toolName, command string, err error, output string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -70,7 +62,6 @@ func (l *InstallLogger) LogError(toolName, command string, err error, output str
 	fmt.Fprintf(l.file, "       Command: %s\n", command)
 	fmt.Fprintf(l.file, "       Error:   %v\n", err)
 	if output != "" {
-		// Truncate output if too long
 		out := truncate(output, 2000)
 		fmt.Fprintf(l.file, "       Output:\n%s\n", indent(out, "       "))
 	}
@@ -78,7 +69,6 @@ func (l *InstallLogger) LogError(toolName, command string, err error, output str
 	_ = l.file.Sync()
 }
 
-// LogInfo logs a general info message.
 func (l *InstallLogger) LogInfo(msg string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -86,7 +76,6 @@ func (l *InstallLogger) LogInfo(msg string) {
 	_ = l.file.Sync()
 }
 
-// Close closes the log file.
 func (l *InstallLogger) Close() error {
 	if l.file != nil {
 		return l.file.Close()

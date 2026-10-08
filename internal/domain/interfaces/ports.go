@@ -2,7 +2,6 @@ package interfaces
 
 import "github.com/vitualizz/vitualizz-devstack/internal/domain/entities"
 
-// ToolRepository queries tools and themes.
 type ToolRepository interface {
 	GetAll() []entities.Tool
 	GetMainTools() []entities.Tool
@@ -16,31 +15,27 @@ type ToolRepository interface {
 	Save(tool entities.Tool)
 }
 
-// Package representa un paquete instalable.
 type Package struct {
 	Name             string
 	Label            string
 	Icon             string
-	Description      string // una línea descriptiva
+	Description      string
 	Tools           []entities.Tool
-	DefaultSelected bool   // se seleciona por defecto
+	DefaultSelected bool
 	Selected        bool
 }
 
-// InstallerPort installs and uninstalls tools.
 type InstallerPort interface {
 	Install(tool *entities.Tool) (*entities.InstallResult, error)
 	Uninstall(tool *entities.Tool) (*entities.InstallResult, error)
 	IsInstalled(tool *entities.Tool) (bool, error)
 }
 
-// ExecutorPort executes shell commands.
 type ExecutorPort interface {
 	Execute(cmd string) (string, error)
 	ExecuteWithOutput(cmd string) (string, error)
 }
 
-// I18nPort provides translations.
 type I18nPort interface {
 	Get(key string, lang string) string
 	SetLanguage(lang string)
