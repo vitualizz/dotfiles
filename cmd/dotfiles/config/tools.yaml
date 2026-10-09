@@ -277,6 +277,19 @@ tools:
     enabled: true
     required: false
 
+  - name: git-config
+    category: tools
+    depends_on: [git, delta]
+    install:
+      all: |
+        [ -e ~/.gitconfig ] || cp $DOTFILES_CONFIG/git/gitconfig ~/.gitconfig
+    uninstall:
+      all: echo "~/.gitconfig es tuyo; no se modifica"
+    check: test -e ~/.gitconfig
+    description: "Siembra ~/.gitconfig (delta, push/pull/rebase sensatos) si no existe"
+    enabled: true
+    required: false
+
   - name: lazygit
     category: tools
     install:

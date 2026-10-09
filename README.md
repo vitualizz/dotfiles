@@ -29,8 +29,9 @@ The installer **installs**; it does not **own** your environment. Each config is
 | Starship prompt | `~/.config/starship.toml` | kept as is |
 | Kitty + Tokyo Night theme | `~/.config/kitty/kitty.conf`, `tokyonight_night.conf` | kept as is (per file) |
 | zsh integration | `~/.zshrc` | a commented `vitualizz dotfiles` block is appended once |
+| Git | `~/.gitconfig` (delta pager, push/pull/rebase defaults) | kept as is; identity and signing go in `~/.gitconfig.local`, included last |
 
-The `~/.zshrc` block wires up what the installer adds (Homebrew, completions, Starship, zoxide, direnv, fzf, atuin and the zsh plugins). Each section only acts if that is not already configured above it, so appending it to an existing `~/.zshrc` doesn't override your setup. Edit, move or delete it freely. A backup (`~/.zshrc.bak-<timestamp>`) is made before appending.
+The `~/.zshrc` block wires up what the installer adds: Homebrew, completion (case-insensitive, menu), history, Starship, zoxide, direnv, fzf (fd + bat/eza previews), atuin, the zsh plugins, Oh My Zsh's git aliases, and `ls`/`cat` through eza/bat. It sources `~/.zshrc.local` last, for secrets and machine-specific settings that never go to git. Each section only acts if that is not already configured above it, so appending it to an existing `~/.zshrc` doesn't override your setup. Edit, move or delete it freely. A backup (`~/.zshrc.bak-<timestamp>`) is made before appending.
 
 Uninstalling tools never touches these files.
 
