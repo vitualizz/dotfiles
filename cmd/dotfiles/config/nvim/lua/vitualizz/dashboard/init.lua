@@ -1,6 +1,5 @@
 -- Start screen (snacks.nvim dashboard), shown when nvim opens without files.
 --   header.lua      ASCII art at the top
---   cheatsheet.lua  keymaps listed in the second column
 -- Options: https://github.com/folke/snacks.nvim/blob/main/docs/dashboard.md
 
 local ui = require 'vitualizz.ui'
@@ -26,6 +25,10 @@ return {
   sections = {
     { section = 'header' },
     { section = 'keys', gap = 1, padding = 1 },
-    require 'vitualizz.dashboard.cheatsheet',
+    -- Points to which-key instead of listing keymaps here.
+    {
+      align = 'center',
+      text = vim.list_extend(ui.pill_chunks('VitualizzDashboardKey', 'Space'), { { ' see every keymap', hl = 'desc' } }),
+    },
   },
 }

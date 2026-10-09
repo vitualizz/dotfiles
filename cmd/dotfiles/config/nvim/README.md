@@ -32,7 +32,6 @@ lua/vitualizz/
   dashboard/
     init.lua                start screen layout and quick actions
     header.lua              ASCII art at the top
-    cheatsheet.lua          keymaps listed on the start screen
 ```
 
 One file per concern: options and keymaps that belong to a plugin live in that plugin's file. Order matters only in `init.lua` (options and `pack` first, then plugins).
@@ -68,6 +67,5 @@ Servers and formatters are listed in `plugins/lsp.lua` and `plugins/format.lua`;
 ## Customizing
 
 - **Start screen art**: replace the string in `lua/vitualizz/dashboard/header.lua` (up to ~60 columns).
-- **Cheatsheet**: edit the groups in `lua/vitualizz/dashboard/cheatsheet.lua`. It is documentation only; when a keymap changes, update it there too.
 - **New plugin**: create `lua/vitualizz/plugins/<name>.lua` with `local gh = require('vitualizz.pack').gh`, its `vim.pack.add { gh 'owner/repo' }` and `setup()`, then add `require 'vitualizz.plugins.<name>'` to `init.lua`. It installs on the next start without a prompt.
 - **Formatting**: Lua files follow `.stylua.toml` (`stylua .`).
