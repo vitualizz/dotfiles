@@ -6,6 +6,7 @@ Started from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) (upstr
 
 ```
 init.lua                    loads every module below, in order
+KEYMAPS.md                  keymap cheatsheet (<leader>ch)
 lua/vitualizz/
   options.lua               editor options and leader key
   pack.lua                  vim.pack setup: no install prompt, build hooks, `gh()` helper
@@ -38,21 +39,7 @@ One file per concern: options and keymaps that belong to a plugin live in that p
 
 ## Keymaps
 
-`<leader>` is `Space`. Press it and wait to see every keymap (which-key).
-
-| Key | Action |
-|-----|--------|
-| `<leader>sf` / `<leader>sg` | Search files / text |
-| `<leader>sR` | Search and replace in the project (grug-far) |
-| `<leader><leader>` / `<leader>bd` | Open buffers / close buffer without closing its window |
-| `s` / `S` | Jump anywhere / select a syntax node (flash) |
-| `gsa` `gsd` `gsr` | Surround: add / delete / replace (`gs` prefix keeps `s` for flash) |
-| `<leader>xx` / `<leader>xt` | Diagnostics / TODOs list (trouble) |
-| `<C-n>` | File explorer |
-| `<A-i>` / `<A-h>` | Floating / bottom terminal (also closes it from inside) |
-| `<leader>gg` | Lazygit |
-| `grd` `grr` `grn` `gra` `K` | Definition, references, rename, code action, hover (with an LSP) |
-| `<leader>f` | Format buffer |
+`<leader>` is `Space`. NvChad-style keymaps (`<leader>ff`, `<Tab>` between buffers, `<leader>x` to close, `<C-s>` to save, Tab/Enter in completion) plus kickstart's `<leader>s` finders. The full list, in Spanish, is in [`KEYMAPS.md`](KEYMAPS.md); `<leader>ch` opens it inside Neovim and `<leader>wK` lists every keymap with which-key.
 
 ## Languages
 

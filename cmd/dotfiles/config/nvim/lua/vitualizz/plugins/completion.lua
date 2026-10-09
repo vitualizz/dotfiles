@@ -51,8 +51,19 @@ hl(0, 'BlinkCmpLabelDescription', { fg = '#8f989b' })
 hl(0, 'BlinkCmpLabelDetail', { fg = '#8f989b' })
 
 require('blink.cmp').setup {
+  -- NvChad-style: Tab/S-Tab move (and jump in snippets), Enter accepts.
+  -- `fallback` lets the insert-mode keymaps run when the menu is closed.
   keymap = {
-    preset = 'default',
+    preset = 'none',
+    ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+    ['<C-e>'] = { 'hide', 'fallback' },
+    ['<CR>'] = { 'accept', 'fallback' },
+    ['<Tab>'] = { 'select_next', 'snippet_forward', 'fallback' },
+    ['<S-Tab>'] = { 'select_prev', 'snippet_backward', 'fallback' },
+    ['<C-n>'] = { 'select_next', 'fallback' },
+    ['<C-p>'] = { 'select_prev', 'fallback' },
+    ['<C-d>'] = { 'scroll_documentation_up', 'fallback' },
+    ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
   },
 
   appearance = {
