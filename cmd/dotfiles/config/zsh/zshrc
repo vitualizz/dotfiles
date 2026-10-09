@@ -34,17 +34,50 @@ if [[ "$OSTYPE" == linux* && -z "$SSH_AUTH_SOCK" && -S "$XDG_RUNTIME_DIR/ssh-age
   export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
 
-if [[ -z "$HISTFILE" ]]; then
-  HISTFILE="$HOME/.zsh_history"
-  HISTSIZE=50000
-  SAVEHIST=50000
-  setopt share_history hist_ignore_all_dups
-fi
+HISTFILE="${HISTFILE:-$HOME/.zsh_history}"
+(( HISTSIZE >= 50000 )) || HISTSIZE=50000
+(( SAVEHIST >= 50000 )) || SAVEHIST=50000
+setopt share_history extended_history hist_ignore_all_dups hist_ignore_space hist_verify
+
+setopt auto_cd auto_pushd pushd_ignore_dups pushd_minus
+alias -g ...='../..'
+alias -g ....='../../..'
+alias -- -='cd -'
 
 (( ${+functions[compdef]} )) || { autoload -Uz compinit && compinit; }
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+if (( ! ${+aliases[gst]} )) && [[ -r "$HOME/.zsh/plugins/omz-git/git.plugin.zsh" ]]; then
+  (( ${+functions[git_current_branch]} )) || git_current_branch() { git branch --show-current 2>/dev/null; }
+  source "$HOME/.zsh/plugins/omz-git/git.plugin.zsh"
+fi
 
 if (( ! ${+aliases[vim]} )) && command -v nvim >/dev/null; then
   alias vim="nvim"
+fi
+if (( ! ${+aliases[ls]} )) && command -v eza >/dev/null; then
+  alias ls='eza --group-directories-first --icons=auto'
+  alias ll='ls -l --git'
+  alias la='ls -la --git'
+  alias lt='ls --tree --level=2'
+fi
+if command -v bat >/dev/null; then
+  export BAT_THEME="${BAT_THEME:-ansi}"
+  (( ${+aliases[cat]} )) || alias cat='bat --paging=never'
+  export MANPAGER="${MANPAGER:-sh -c 'col -bx | bat -l man -p'}"
+fi
+if command -v fd >/dev/null; then
+  export FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-fd --type f --hidden --follow --exclude .git}"
+  export FZF_CTRL_T_COMMAND="${FZF_CTRL_T_COMMAND:-$FZF_DEFAULT_COMMAND}"
+  export FZF_ALT_C_COMMAND="${FZF_ALT_C_COMMAND:-fd --type d --hidden --follow --exclude .git}"
+fi
+if [[ -z "$FZF_CTRL_T_OPTS" ]] && command -v bat >/dev/null; then
+  export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {}'"
+fi
+if [[ -z "$FZF_ALT_C_OPTS" ]] && command -v eza >/dev/null; then
+  export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons=always {}'"
 fi
 
 if command -v starship >/dev/null && [[ -z "$STARSHIP_SHELL" && -z "$ZSH_THEME" ]] && (( ! ${+functions[p10k]} )); then
@@ -69,5 +102,8 @@ fi
 if [[ -z "$ZSH_HIGHLIGHT_VERSION" && -r "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
   source "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
+
+# Secrets and machine-specific settings. Never commit this file.
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # ── fin vitualizz dotfiles ─────────────────────────────────────────

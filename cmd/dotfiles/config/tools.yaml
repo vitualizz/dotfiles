@@ -277,6 +277,19 @@ tools:
     enabled: true
     required: false
 
+  - name: git-config
+    category: tools
+    depends_on: [git, delta]
+    install:
+      all: |
+        [ -e ~/.gitconfig ] || cp $DOTFILES_CONFIG/git/gitconfig ~/.gitconfig
+    uninstall:
+      all: echo "~/.gitconfig es tuyo; no se modifica"
+    check: test -e ~/.gitconfig
+    description: "Siembra ~/.gitconfig (delta, push/pull/rebase sensatos) si no existe"
+    enabled: true
+    required: false
+
   - name: lazygit
     category: tools
     install:
@@ -716,6 +729,21 @@ tools:
     enabled: true
     required: false
     source_url: https://github.com/zsh-users/zsh-syntax-highlighting
+
+  - name: zsh-git-aliases
+    category: shell
+    depends_on: [zsh, git]
+    install:
+      all: |
+        mkdir -p ~/.zsh/plugins/omz-git
+        curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/83a0ec79ee3b1f64c6ae2e80dcb1fb27a55e5952/plugins/git/git.plugin.zsh -o ~/.zsh/plugins/omz-git/git.plugin.zsh
+    uninstall:
+      all: rm -rf ~/.zsh/plugins/omz-git
+    check: test -f ~/.zsh/plugins/omz-git/git.plugin.zsh
+    description: "Alias de git de Oh My Zsh (gst, gco, gcm, gpsup...) sin Oh My Zsh"
+    enabled: true
+    required: false
+    source_url: https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git
 
   - name: atuin
     category: shell

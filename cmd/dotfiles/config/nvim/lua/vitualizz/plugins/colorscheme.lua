@@ -52,8 +52,6 @@ if transparent then
   local canvas = {
     Normal = true,
     NormalNC = true,
-    NormalFloat = true,
-    WhichKeyFloat = true,
     SignColumn = true,
     FoldColumn = true,
     LineNr = true,
@@ -61,7 +59,7 @@ if transparent then
     LineNrBelow = true,
   }
   for name in pairs(vim.api.nvim_get_hl(0, {})) do
-    if canvas[name] or name:match '^GitSigns' or name:match '^MiniDiffSign' or name:match '^DiagnosticFloating' then
+    if canvas[name] or name:match '^GitSigns' or name:match '^MiniDiffSign' then
       local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
       hl.bg, hl.ctermbg = nil, nil
       vim.api.nvim_set_hl(0, name, hl)
@@ -69,4 +67,26 @@ if transparent then
   end
 end
 
-return { palette = everblush, transparent = transparent }
+-- Everblush's UI shades from NvChad (base_30), for panels and cards.
+local ui = {
+  panel = '#10171a',
+  input = '#1a2124',
+  selection = '#272e31',
+}
+
+-- Floating windows (hover, which-key, diagnostics, terminal, lazygit) as
+-- cards: solid panel background, borders in the same color so they only add
+-- padding, and titles as colored blocks like the statusline.
+vim.api.nvim_set_hl(0, 'NormalFloat', { fg = everblush.base05, bg = ui.panel })
+vim.api.nvim_set_hl(0, 'FloatBorder', { fg = ui.panel, bg = ui.panel })
+vim.api.nvim_set_hl(0, 'FloatTitle', { fg = everblush.base00, bg = everblush.base0D, bold = true })
+vim.api.nvim_set_hl(0, 'WhichKeyFloat', { bg = ui.panel })
+for name in pairs(vim.api.nvim_get_hl(0, {})) do
+  if name:match '^DiagnosticFloating' then
+    local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+    hl.bg = ui.panel
+    vim.api.nvim_set_hl(0, name, hl)
+  end
+end
+
+return { palette = everblush, ui = ui, transparent = transparent }

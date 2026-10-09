@@ -1,0 +1,35 @@
+[init]
+	defaultBranch = main
+[core]
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+	syntax-theme = ansi
+[diff]
+	algorithm = histogram
+	colorMoved = default
+[merge]
+	conflictStyle = zdiff3
+[push]
+	autoSetupRemote = true
+[pull]
+	rebase = true
+[fetch]
+	prune = true
+[rebase]
+	autoStash = true
+[rerere]
+	enabled = true
+[branch]
+	sort = -committerdate
+[column]
+	ui = auto
+[commit]
+	verbose = true
+
+# Identity, signing and anything machine-specific. Included last so it wins.
+[include]
+	path = ~/.gitconfig.local

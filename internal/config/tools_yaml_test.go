@@ -87,6 +87,7 @@ func TestShippedTools_SeedsConfigWithoutOverwriting(t *testing.T) {
 		{"kitty-config", ".config/kitty/kitty.conf", false},
 		{"starship-config", ".config/starship.toml", false},
 		{"nvim-config", ".config/nvim/init.lua", false},
+		{"git-config", ".gitconfig", false},
 	}
 
 	for _, tc := range cases {
