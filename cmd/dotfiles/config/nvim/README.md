@@ -19,13 +19,16 @@ lua/vitualizz/
     statusline.lua          powerline-style statusline colored by mode
     git.lua                 gitsigns and its keymaps
     which-key.lua           keymap hints
-    telescope.lua           fuzzy finder and its keymaps
+    picker.lua              fuzzy finder (snacks.picker) and LSP pickers
     lsp.lua                 language servers (Mason) and LSP keymaps
     format.lua              conform.nvim
     completion.lua          blink.cmp and LuaSnip
     treesitter.lua          syntax parsers, highlighting, folds
     autopairs.lua           closing brackets and quotes
-    snacks.lua              start screen, explorer, terminal, lazygit, indent, notifications
+    flash.lua               jump anywhere with `s`
+    trouble.lua             diagnostics, symbols and TODO lists
+    grug-far.lua            project-wide search and replace
+    snacks.lua              start screen, picker, explorer, terminal, lazygit, bufdelete, indent, notifications
   dashboard/
     init.lua                start screen layout and quick actions
     header.lua              ASCII art at the top
@@ -41,7 +44,11 @@ One file per concern: options and keymaps that belong to a plugin live in that p
 | Key | Action |
 |-----|--------|
 | `<leader>sf` / `<leader>sg` | Search files / text |
-| `<leader><leader>` | Open buffers |
+| `<leader>sR` | Search and replace in the project (grug-far) |
+| `<leader><leader>` / `<leader>bd` | Open buffers / close buffer without closing its window |
+| `s` / `S` | Jump anywhere / select a syntax node (flash) |
+| `gsa` `gsd` `gsr` | Surround: add / delete / replace (`gs` prefix keeps `s` for flash) |
+| `<leader>xx` / `<leader>xt` | Diagnostics / TODOs list (trouble) |
 | `<C-n>` | File explorer |
 | `<A-i>` / `<A-h>` | Floating / bottom terminal (also closes it from inside) |
 | `<leader>gg` | Lazygit |

@@ -5,7 +5,7 @@ local transparent = true
 
 -- Everblush, with the base16 palette NvChad uses (base46 v3.0), applied by
 -- mini.base16 (part of mini.nvim), which also colors snacks, blink, which-key,
--- telescope, gitsigns and mini.
+-- the picker, gitsigns and mini.
 local everblush = {
   base00 = '#141b1e',
   base01 = '#1e2528',
@@ -29,11 +29,24 @@ vim.pack.add { gh 'nvim-mini/mini.nvim' }
 require('mini.base16').setup { palette = everblush }
 vim.g.colors_name = 'everblush'
 
--- Everblush's grays are below 3:1, so comments are hard to read. Same hue,
--- lifted to 4.5:1 (comments) and 3:1 (line numbers) on both Everblush's and
--- the terminal's background.
-vim.api.nvim_set_hl(0, 'Comment', { fg = '#7e888c' })
-vim.api.nvim_set_hl(0, 'LineNr', { fg = '#636c6f' })
+-- Everblush's grays are below 3:1, so mini.base16 renders comments, line
+-- numbers and other secondary text nearly invisible. Same hue, three tiers
+-- (contrast on Everblush's and on the terminal's background):
+--   main      #dadada  12:1   current line number
+--   secondary #7e888c  4.7:1  comments, folds, which-key values, trouble locations
+--   dim       #636c6f  3.2:1  line numbers, listchars, end-of-buffer
+local readable = {
+  [everblush.base05] = { 'CursorLineNr' },
+  ['#7e888c'] = { 'Comment', 'Folded', 'WhichKeyValue', 'TroubleLocation' },
+  ['#636c6f'] = { 'LineNr', 'LineNrAbove', 'LineNrBelow', 'NonText', 'Whitespace', 'SpecialKey', 'EndOfBuffer' },
+}
+for color, groups in pairs(readable) do
+  for _, name in ipairs(groups) do
+    local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+    hl.fg = color
+    vim.api.nvim_set_hl(0, name, hl)
+  end
+end
 
 if transparent then
   local canvas = {
@@ -43,6 +56,7 @@ if transparent then
     WhichKeyFloat = true,
     SignColumn = true,
     FoldColumn = true,
+    LineNr = true,
     LineNrAbove = true,
     LineNrBelow = true,
   }

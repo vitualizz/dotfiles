@@ -9,5 +9,8 @@ require('which-key').setup {
     { '<leader>t', group = '[T]oggle' },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
     { 'gr', group = 'LSP Actions', mode = { 'n' } },
+    { '<leader>x', group = 'Trouble lists' },
+    { '<leader>b', group = '[B]uffer' },
+    { 'gs', group = 'Surround', mode = { 'n', 'x' } },
   },
 }
