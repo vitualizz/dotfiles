@@ -43,6 +43,11 @@ fi
 
 (( ${+functions[compdef]} )) || { autoload -Uz compinit && compinit; }
 
+if (( ! ${+aliases[gst]} )) && [[ -r "$HOME/.zsh/plugins/omz-git/git.plugin.zsh" ]]; then
+  (( ${+functions[git_current_branch]} )) || git_current_branch() { git branch --show-current 2>/dev/null; }
+  source "$HOME/.zsh/plugins/omz-git/git.plugin.zsh"
+fi
+
 if (( ! ${+aliases[vim]} )) && command -v nvim >/dev/null; then
   alias vim="nvim"
 fi
