@@ -43,9 +43,17 @@ local groups = {
   },
 }
 
+-- Group titles are pills, one color per topic, like the statusline modes.
+local ui = require 'vitualizz.ui'
+local c = require('vitualizz.plugins.colorscheme').palette
+local title_colors = { Find = c.base0D, Move = c.base0E, Code = c.base0B, Tools = c.base0A, Git = c.base08 }
+for title, color in pairs(title_colors) do
+  ui.pill('VitualizzCheatsheet' .. title, color)
+end
+
 local section = { pane = 2, padding = 1 }
 for _, group in ipairs(groups) do
-  table.insert(section, { text = { { group[1], hl = 'title' } } })
+  table.insert(section, { text = ui.pill_chunks('VitualizzCheatsheet' .. group[1], group[1]) })
   for i = 2, #group do
     local key, desc = group[i][1], group[i][2]
     table.insert(section, {
