@@ -14,7 +14,7 @@ lua/vitualizz/
   autocmds.lua              autocommands (highlight on yank)
   health.lua                `:checkhealth vitualizz`
   plugins/
-    colorscheme.lua         tokyonight
+    colorscheme.lua         Everblush (NvChad base16 palette via mini.base16)
     editor.lua              guess-indent, todo-comments, mini (statusline, text objects, surround)
     git.lua                 gitsigns and its keymaps
     which-key.lua           keymap hints
