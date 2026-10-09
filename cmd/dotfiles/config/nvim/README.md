@@ -6,6 +6,7 @@ Started from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) (upstr
 
 ```
 init.lua                    loads every module below, in order
+KEYMAPS.md                  keymap cheatsheet (<leader>ch)
 lua/vitualizz/
   options.lua               editor options and leader key
   pack.lua                  vim.pack setup: no install prompt, build hooks, `gh()` helper
@@ -32,28 +33,13 @@ lua/vitualizz/
   dashboard/
     init.lua                start screen layout and quick actions
     header.lua              ASCII art at the top
-    cheatsheet.lua          keymaps listed on the start screen
 ```
 
 One file per concern: options and keymaps that belong to a plugin live in that plugin's file. Order matters only in `init.lua` (options and `pack` first, then plugins).
 
 ## Keymaps
 
-`<leader>` is `Space`. Press it and wait to see every keymap (which-key).
-
-| Key | Action |
-|-----|--------|
-| `<leader>sf` / `<leader>sg` | Search files / text |
-| `<leader>sR` | Search and replace in the project (grug-far) |
-| `<leader><leader>` / `<leader>bd` | Open buffers / close buffer without closing its window |
-| `s` / `S` | Jump anywhere / select a syntax node (flash) |
-| `gsa` `gsd` `gsr` | Surround: add / delete / replace (`gs` prefix keeps `s` for flash) |
-| `<leader>xx` / `<leader>xt` | Diagnostics / TODOs list (trouble) |
-| `<C-n>` | File explorer |
-| `<A-i>` / `<A-h>` | Floating / bottom terminal (also closes it from inside) |
-| `<leader>gg` | Lazygit |
-| `grd` `grr` `grn` `gra` `K` | Definition, references, rename, code action, hover (with an LSP) |
-| `<leader>f` | Format buffer |
+`<leader>` is `Space`. NvChad-style keymaps (`<leader>ff`, `<Tab>` between buffers, `<leader>x` to close, `<C-s>` to save, Tab/Enter in completion) plus kickstart's `<leader>s` finders. The full list, in Spanish, is in [`KEYMAPS.md`](KEYMAPS.md); `<leader>ch` opens it inside Neovim and `<leader>wK` lists every keymap with which-key.
 
 ## Languages
 
@@ -68,6 +54,5 @@ Servers and formatters are listed in `plugins/lsp.lua` and `plugins/format.lua`;
 ## Customizing
 
 - **Start screen art**: replace the string in `lua/vitualizz/dashboard/header.lua` (up to ~60 columns).
-- **Cheatsheet**: edit the groups in `lua/vitualizz/dashboard/cheatsheet.lua`. It is documentation only; when a keymap changes, update it there too.
 - **New plugin**: create `lua/vitualizz/plugins/<name>.lua` with `local gh = require('vitualizz.pack').gh`, its `vim.pack.add { gh 'owner/repo' }` and `setup()`, then add `require 'vitualizz.plugins.<name>'` to `init.lua`. It installs on the next start without a prompt.
 - **Formatting**: Lua files follow `.stylua.toml` (`stylua .`).

@@ -89,4 +89,27 @@ for name in pairs(vim.api.nvim_get_hl(0, {})) do
   end
 end
 
+-- Diagnostic virtual text as tinted blocks: the level's color on a 15% tint
+-- of it, so errors and warnings read as badges at the end of the line.
+-- mini.base16 paints warnings purple; make them yellow everywhere (text,
+-- signs, underlines, floats) so severities read red/yellow/cyan/blue.
+local purple, yellow = tonumber(everblush.base0E:sub(2), 16), everblush.base0A
+for name in pairs(vim.api.nvim_get_hl(0, {})) do
+  if name:match 'Warn' then
+    local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+    if hl.fg == purple then hl.fg = yellow end
+    if hl.sp == purple then hl.sp = yellow end
+    vim.api.nvim_set_hl(0, name, hl)
+  end
+end
+
+local blend = require('vitualizz.ui').blend
+for _, level in ipairs { 'Error', 'Warn', 'Info', 'Hint', 'Ok' } do
+  local fg = vim.api.nvim_get_hl(0, { name = 'Diagnostic' .. level, link = false }).fg
+  if fg then
+    local color = string.format('#%06x', fg)
+    vim.api.nvim_set_hl(0, 'DiagnosticVirtualText' .. level, { fg = color, bg = blend(color, everblush.base00, 0.15) })
+  end
+end
+
 return { palette = everblush, ui = ui, transparent = transparent }

@@ -16,9 +16,20 @@ map('n', '<leader>sr', pick 'resume', { desc = '[S]earch [R]esume' })
 map('n', '<leader>s.', pick 'recent', { desc = '[S]earch Recent Files ("." for repeat)' })
 map('n', '<leader>sc', pick 'commands', { desc = '[S]earch [C]ommands' })
 map('n', '<leader><leader>', pick 'buffers', { desc = '[ ] Find existing buffers' })
-map('n', '<leader>/', pick 'lines', { desc = '[/] Fuzzily search in current buffer' })
 map('n', '<leader>s/', pick 'grep_buffers', { desc = '[S]earch [/] in Open Files' })
 map('n', '<leader>sn', pick('files', { cwd = vim.fn.stdpath 'config' }), { desc = '[S]earch [N]eovim files' })
+
+-- NvChad's <leader>f finders (same pickers as <leader>s above).
+map('n', '<leader>ff', pick 'files', { desc = '[F]ind [F]iles' })
+map('n', '<leader>fa', pick('files', { hidden = true, ignored = true }), { desc = '[F]ind [A]ll files (hidden and ignored)' })
+map('n', '<leader>fw', pick 'grep', { desc = '[F]ind [W]ord (live grep)' })
+map('n', '<leader>fb', pick 'buffers', { desc = '[F]ind [B]uffers' })
+map('n', '<leader>fh', pick 'help', { desc = '[F]ind [H]elp' })
+map('n', '<leader>fo', pick 'recent', { desc = '[F]ind [O]ld files' })
+map('n', '<leader>fz', pick 'lines', { desc = '[F]ind in current buffer' })
+map('n', '<leader>ma', pick 'marks', { desc = '[Ma]rks' })
+map('n', '<leader>cm', pick 'git_log', { desc = 'Git [C]o[m]mits' })
+map('n', '<leader>gt', pick 'git_status', { desc = '[G]it s[T]atus' })
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('vitualizz-picker-lsp-attach', { clear = true }),

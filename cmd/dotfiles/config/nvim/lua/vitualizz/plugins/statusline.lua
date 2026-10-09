@@ -32,6 +32,20 @@ hl(0, 'MiniStatuslineFilename', { fg = c.base05, bg = bg.file })
 hl(0, 'MiniStatuslineInactive', { fg = secondary, bg = bg.file })
 hl(0, 'StatusLine', { fg = c.base05, bg = bg.edge })
 
+-- The current line number takes the mode's color too, tying the cursor to
+-- the statusline.
+local mode_of = { n = 'Normal', i = 'Insert', v = 'Visual', V = 'Visual', ['\22'] = 'Visual', R = 'Replace', c = 'Command' }
+local line_nr_bg = vim.api.nvim_get_hl(0, { name = 'CursorLineNr', link = false }).bg
+local function paint_line_number()
+  local mode = mode_of[vim.api.nvim_get_mode().mode:sub(1, 1)] or 'Other'
+  hl(0, 'CursorLineNr', { fg = modes[mode], bg = line_nr_bg, bold = true })
+end
+paint_line_number()
+vim.api.nvim_create_autocmd('ModeChanged', {
+  group = vim.api.nvim_create_augroup('vitualizz-mode-line-number', { clear = true }),
+  callback = paint_line_number,
+})
+
 local function sep(group, char) return '%#' .. group .. '#' .. char end
 
 local function active()
