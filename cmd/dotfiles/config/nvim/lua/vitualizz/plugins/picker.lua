@@ -32,3 +32,23 @@ vim.api.nvim_create_autocmd('LspAttach', {
     lsp('grt', 'lsp_type_definitions', '[G]oto [T]ype Definition')
   end,
 })
+
+-- NvChad-style cards: no visible borders (same color as the background, so
+-- they only add padding), a lighter prompt band, and titles as colored
+-- blocks like the statusline.
+local theme = require 'vitualizz.plugins.colorscheme'
+local c, ui = theme.palette, theme.ui
+local hl = vim.api.nvim_set_hl
+for _, part in ipairs { 'Box', 'List', 'Preview' } do
+  hl(0, 'SnacksPicker' .. part, { fg = c.base05, bg = ui.panel })
+  hl(0, 'SnacksPicker' .. part .. 'Border', { fg = ui.panel, bg = ui.panel })
+end
+hl(0, 'SnacksPickerInput', { fg = c.base05, bg = ui.input })
+hl(0, 'SnacksPickerInputBorder', { fg = ui.input, bg = ui.input })
+hl(0, 'SnacksPickerPrompt', { fg = c.base08, bg = ui.input, bold = true })
+hl(0, 'SnacksPickerBoxTitle', { fg = c.base00, bg = c.base08, bold = true })
+hl(0, 'SnacksPickerInputTitle', { fg = c.base00, bg = c.base08, bold = true })
+hl(0, 'SnacksPickerPreviewTitle', { fg = c.base00, bg = c.base0B, bold = true })
+hl(0, 'SnacksPickerListTitle', { fg = c.base00, bg = c.base0D, bold = true })
+hl(0, 'SnacksPickerListCursorLine', { bg = ui.selection, bold = true })
+hl(0, 'SnacksPickerPreviewCursorLine', { bg = ui.selection })
