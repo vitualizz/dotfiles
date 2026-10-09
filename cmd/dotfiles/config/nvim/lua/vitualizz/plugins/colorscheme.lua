@@ -1,5 +1,8 @@
 local gh = require('vitualizz.pack').gh
 
+-- Let the terminal's background (and its opacity) show through.
+local transparent = true
+
 -- Everblush, with the base16 palette NvChad uses (base46 v3.0), applied by
 -- mini.base16 (part of mini.nvim), which also colors snacks, blink, which-key,
 -- telescope, gitsigns and mini.
@@ -26,7 +29,38 @@ vim.pack.add { gh 'nvim-mini/mini.nvim' }
 require('mini.base16').setup { palette = everblush }
 vim.g.colors_name = 'everblush'
 
--- Everblush's grays are below 3:1 on its background, so comments are hard to
--- read. Same hue, lifted to 4.5:1 (comments) and 3:1 (line numbers).
-vim.api.nvim_set_hl(0, 'Comment', { fg = '#798488' })
-vim.api.nvim_set_hl(0, 'LineNr', { fg = '#5e676a' })
+-- Everblush's grays are below 3:1, so comments are hard to read. Same hue,
+-- lifted to 4.5:1 (comments) and 3:1 (line numbers) on both Everblush's and
+-- the terminal's background.
+vim.api.nvim_set_hl(0, 'Comment', { fg = '#7e888c' })
+vim.api.nvim_set_hl(0, 'LineNr', { fg = '#636c6f' })
+
+-- mini.base16 also draws statusline text in those grays over near-identical
+-- backgrounds (1.2-1.4:1). Main text in the foreground color, secondary info
+-- in a same-hue gray at 4.5:1 or more; section backgrounds unchanged.
+local secondary = '#8f989b'
+vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { fg = everblush.base05, bg = everblush.base01 })
+vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { fg = secondary, bg = everblush.base01 })
+vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { fg = secondary, bg = everblush.base02 })
+vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { fg = secondary, bg = everblush.base02 })
+vim.api.nvim_set_hl(0, 'MiniStatuslineModeOther', { fg = everblush.base05, bg = everblush.base03 })
+
+if transparent then
+  local canvas = {
+    Normal = true,
+    NormalNC = true,
+    NormalFloat = true,
+    WhichKeyFloat = true,
+    SignColumn = true,
+    FoldColumn = true,
+    LineNrAbove = true,
+    LineNrBelow = true,
+  }
+  for name in pairs(vim.api.nvim_get_hl(0, {})) do
+    if canvas[name] or name:match '^GitSigns' or name:match '^MiniDiffSign' or name:match '^DiagnosticFloating' then
+      local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+      hl.bg, hl.ctermbg = nil, nil
+      vim.api.nvim_set_hl(0, name, hl)
+    end
+  end
+end

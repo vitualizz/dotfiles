@@ -36,7 +36,7 @@ Uninstalling tools never touches these files.
 
 ## Theme
 
-- **Neovim**: Everblush, with the base16 palette NvChad uses, applied by `mini.base16` (`nvim/lua/vitualizz/plugins/colorscheme.lua`). Comments and line numbers are lightened to 4.5:1 and 3:1 contrast; Everblush's own grays are below 3:1.
+- **Neovim**: Everblush, with the base16 palette NvChad uses, applied by `mini.base16` (`nvim/lua/vitualizz/plugins/colorscheme.lua`). Transparent background (Kitty's shows through). Comments and line numbers are lightened to 4.5:1 and 3:1 contrast; Everblush's own grays are below 3:1.
 - **Kitty**: Tokyo Night, from the official `tokyonight_night.conf`. **Starship** uses the terminal's ANSI colors, so it follows Kitty.
 
 ## What's installed
