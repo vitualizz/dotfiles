@@ -9,7 +9,13 @@ local groups = {
     { '<leader>sg', 'Text (grep)' },
     { '<leader>s.', 'Recent files' },
     { '<leader><leader>', 'Open buffers' },
-    { '<leader>sk', 'Keymaps' },
+    { '<leader>sR', 'Search and replace' },
+  },
+  {
+    'Move',
+    { 's', 'Jump (flash)' },
+    { 'S', 'Select syntax node' },
+    { 'gsa / gsd / gsr', 'Surround add/del/replace' },
   },
   {
     'Code',
@@ -19,6 +25,7 @@ local groups = {
     { 'gra', 'Code action' },
     { 'K', 'Hover docs' },
     { '<leader>f', 'Format buffer' },
+    { '<leader>xx', 'Diagnostics list' },
   },
   {
     'Tools',
@@ -26,6 +33,7 @@ local groups = {
     { '<A-i>', 'Floating terminal' },
     { '<A-h>', 'Bottom terminal' },
     { '<leader>gg', 'Lazygit' },
+    { '<leader>bd', 'Close buffer' },
   },
   {
     'Git',

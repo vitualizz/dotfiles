@@ -9,6 +9,7 @@ vim.pack.add { { src = gh 'folke/snacks.nvim', version = vim.version.range '2.*'
 require('snacks').setup {
   dashboard = require 'vitualizz.dashboard',
   explorer = { enabled = true, replace_netrw = true },
+  picker = { enabled = true },
   indent = { enabled = true },
   notifier = { enabled = true },
 }
@@ -23,3 +24,5 @@ vim.keymap.set('n', '<C-n>', function() Snacks.explorer() end, { desc = 'Toggle 
 vim.keymap.set({ 'n', 't' }, '<A-i>', toggle_terminal(1, 'float'), { desc = 'Toggle floating terminal' })
 vim.keymap.set({ 'n', 't' }, '<A-h>', toggle_terminal(2, 'bottom'), { desc = 'Toggle bottom terminal' })
 vim.keymap.set('n', '<leader>gg', function() Snacks.lazygit() end, { desc = '[G]it: lazy[g]it' })
+vim.keymap.set('n', '<leader>bd', function() Snacks.bufdelete() end, { desc = '[B]uffer [D]elete (keeps the window layout)' })
+vim.keymap.set('n', '<leader>bo', function() Snacks.bufdelete.other() end, { desc = '[B]uffer: delete [O]thers' })

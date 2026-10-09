@@ -2,7 +2,7 @@ local gh = require('vitualizz.pack').gh
 
 vim.pack.add { gh 'NMAC427/guess-indent.nvim' }
 require('guess-indent').setup {}
-vim.pack.add { gh 'folke/todo-comments.nvim' }
+vim.pack.add { gh 'nvim-lua/plenary.nvim', gh 'folke/todo-comments.nvim' }
 require('todo-comments').setup { signs = false }
 
 vim.pack.add { gh 'nvim-mini/mini.nvim' }
@@ -20,9 +20,15 @@ require('mini.ai').setup {
   n_lines = 500,
 }
 
-require('mini.surround').setup()
-
-local statusline = require 'mini.statusline'
-statusline.setup { use_icons = vim.g.have_nerd_font }
-
-statusline.section_location = function() return '%2l:%-2v' end
+-- `gs` prefix (gsa, gsd, gsr...) leaves `s` free for flash.
+require('mini.surround').setup {
+  mappings = {
+    add = 'gsa',
+    delete = 'gsd',
+    find = 'gsf',
+    find_left = 'gsF',
+    highlight = 'gsh',
+    replace = 'gsr',
+    update_n_lines = 'gsn',
+  },
+}
