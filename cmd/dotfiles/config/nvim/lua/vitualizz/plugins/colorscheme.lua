@@ -35,16 +35,6 @@ vim.g.colors_name = 'everblush'
 vim.api.nvim_set_hl(0, 'Comment', { fg = '#7e888c' })
 vim.api.nvim_set_hl(0, 'LineNr', { fg = '#636c6f' })
 
--- mini.base16 also draws statusline text in those grays over near-identical
--- backgrounds (1.2-1.4:1). Main text in the foreground color, secondary info
--- in a same-hue gray at 4.5:1 or more; section backgrounds unchanged.
-local secondary = '#8f989b'
-vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { fg = everblush.base05, bg = everblush.base01 })
-vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { fg = secondary, bg = everblush.base01 })
-vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { fg = secondary, bg = everblush.base02 })
-vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { fg = secondary, bg = everblush.base02 })
-vim.api.nvim_set_hl(0, 'MiniStatuslineModeOther', { fg = everblush.base05, bg = everblush.base03 })
-
 if transparent then
   local canvas = {
     Normal = true,
@@ -64,3 +54,5 @@ if transparent then
     end
   end
 end
+
+return { palette = everblush, transparent = transparent }

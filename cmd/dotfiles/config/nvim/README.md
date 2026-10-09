@@ -15,7 +15,8 @@ lua/vitualizz/
   health.lua                `:checkhealth vitualizz`
   plugins/
     colorscheme.lua         Everblush (NvChad base16 palette via mini.base16)
-    editor.lua              guess-indent, todo-comments, mini (statusline, text objects, surround)
+    editor.lua              guess-indent, todo-comments, mini (text objects, surround)
+    statusline.lua          powerline-style statusline colored by mode
     git.lua                 gitsigns and its keymaps
     which-key.lua           keymap hints
     telescope.lua           fuzzy finder and its keymaps
